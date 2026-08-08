@@ -1,0 +1,9 @@
+# Build artifacts
+build/
+*.dex
+*.apk
+*.keystore
+
+# Temp / logs
+*.log
+*.tmp
