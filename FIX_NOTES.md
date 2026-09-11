@@ -184,12 +184,12 @@ C. getTrackerDevices 0x10bdc / 0x10bf8 (两处, 正常路径 + 重试路径)
 
 ### 更正: 空设备列表不是正常 2.0.5 流程
 
-我已确认: 只有在设备列表中有追踪器时, 才能进行校准。
+实测确认: 只有在设备列表中有追踪器时, 才能进行校准。
 因此 `SwiftImpl: devices: []` 不是“等待穿戴校准”的正常状态,
 而是设备枚举/配对链路仍未完成的故障状态。
 
 当前已确认补丁解决了 `getSwiftTrackerInfoVector` 符号缺失导致的崩溃/空指针风险,
-也确认我真实点击“扫描设备/配对设备”后 pairing 调用已触发且返回 0。
+也确认真实点击“扫描设备/配对设备”后 pairing 调用已触发且返回 0。
 
 当前新的主要阻塞点不是 pairing 调用失败, 而是 Stationservice 拒绝 pairing:
 
@@ -228,7 +228,7 @@ SwiftImpl: devices: []
 
 ### 更正: 不能把空设备列表解释为正常等待校准
 
-- 我明确指出: 只有列表里有设备时才能校准。
+- 实测结论: 只有列表里有设备时才能校准。
 - `SwiftImpl: devices: []` 是当前故障, 不是 2.0.5 正常流程。
 - 系统里有 `mBindTrackerCount 3`, 但三个追踪器 `online 0`,
   `TrackerConnectCount: 0`, 说明“系统存在绑定记录”不等于“应用可枚举设备”。
@@ -285,9 +285,9 @@ tracker 状态变化后不可靠。设备枚举改由 statusChangedCallback 回�
 - 模块: C:\tmp\swift_mod\pico4_swift_force_enable_205.zip (version=1.3)
 - libswift.so md5: cbc6fe1ee6a0cdb02e4ce1e53f0fc5a9 (同 v18/v19)
 
-### v20: 移除 pre-pair unBond, 强制开启 discovery (我要求)
+### v20: 移除 pre-pair unBond, 强制开启 discovery
 
-我指出每次配对解绑其他追踪器不可接受。
+每次配对都解绑其他追踪器, 这不可接受。
 
 重新分析 v15 点击日志后确认: `StartTrackerPairing re=0` 说明配对模式进入成功,
 真正的阻塞是 `setSwiftDiscoverySwitch: 1 ignore` —— SwiftRepo.setSwiftDiscoverySwitch(IZ)
@@ -309,7 +309,7 @@ isAppVisible=false 的后台场景。禁用路径 (enable=0) 未改动。
 
 ### v20 实测: 配对成功 + 新问题 (2026-09-12 00:12)
 
-我配对 PC2310MLJB250506G 成功进入槽位 1, 但连接 3-4 秒后断链:
+实测配对 PC2310MLJB250506G 成功进入槽位 1, 但连接 3-4 秒后断链:
 
 ```
 tracker1 connected -> lose_connect_tracker_station
@@ -343,11 +343,11 @@ SwiftImpl.getDevicesVector 的 "devices: null" 日志为预期行为 (native 路
 
 当前产物: swift205_patched_v21.apk, md5 2c9016924b880482c2fd6539df38fa6a
 
-### v22: 3 点模式 override (我选择 3 点仍要求配对 5 点)
+### v22: 3 点模式 override
 
 根因: PICO 配置服务 (PxrConfigService) 拒绝应用写入系统键,
 `sys_tracking_tracker_wear_mode` 卡在 "3"(5tk_thigh),
-`com.pvr.swift.upper.limit` 卡在 5, 我在 UI 里选择 3 点无法落盘
+`com.pvr.swift.upper.limit` 卡在 5, UI 里选择 3 点无法落盘
 (会话日志中 setSwiftUpperLimit 从未被调用, 疑被弹窗/选项过滤拦截)。
 
 穿戴模式原始值映射 (SwiftV2Event$Companion.getWearMode):
@@ -365,16 +365,16 @@ SwiftImpl.getDevicesVector 的 "devices: null" 日志为预期行为 (native 路
    `getWearMode()` 优先返回 override; `setWearMode(String)` 先记 override。
 
 验证: 启动日志 `swiftUpperLimit: 3`。
-之后我在应用内切换 3 点/5 点 (穿戴模式页/设置数量上限) 均会即时生效。
+之后在应用内切换 3 点/5 点 (穿戴模式页/设置数量上限) 均会即时生效。
 
 当前产物: swift205_patched_v22.apk, md5 0e0e36c87f5b97f1601e2cecd038e26a
 
-### v23: 穿戴模式切换联动配对上限 (我要求 2/3/5 点切换可用)
+### v23: 穿戴模式切换联动配对上限
 
 背景: PICO 4 标准版官方只支持 3 点, 5 点为 Ultra 能力; 现移植 Ultra 的
 2.0.5 应用, 目标是让 2/3/5 点切换按钮真正可用。
 系统层证据: MCU 配置 tracker_num 5 (5 个配对槽位), Stationservice 按 5 槽位
-工作, 5 点限制大概率是产品档位软件门 (已绕过), 但我只有 3 台追踪器,
+工作, 5 点限制大概率是产品档位软件门 (已绕过), 但手上只有 3 台追踪器,
 5 点物理上配不满, 待有 5 台后再验证。
 
 发现的 UI 缺陷: WearModeFragment 确认回调 (onViewCreated$lambda-2) 只在
