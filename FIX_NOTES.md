@@ -399,3 +399,13 @@ setWearMode 已被 v22 override 覆盖, 均即时生效。
 "Unterminated character literal" — 插入文本务必检查首字符。
 
 当前产物: swift205_patched_v23.apk, md5 fff13444db4f79603a7e613177be23ea
+
+### Release v2.0 (发布)
+
+- 仓库: https://github.com/hhhbwc/pico4-trackerlimit (LSPosed 旧方案已移除)
+- 模块包: PICO4_MotionTracker_2.0.5_v2.0.zip
+  - md5 3f8c378bc7e705e28fb1551a4789dd44
+  - sha256 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
+  - module.prop version=v2.0 (versionCode 4), 内含 README
+- 附件: 模块 zip + swift205_patched_v23.apk (118MB 超 git 单文件限制, 只放 Release)
+- 文档: README 三语 (中/EN/RU) + RELEASE_NOTES + 本记录
