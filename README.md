@@ -1,3 +1,5 @@
+🌐 [简体中文](README.md) | [English](README_EN.md) | [Русский](README_RU.md)
+
 # PICO 4 Motion Tracker Unlock (2.0.5)
 
 针对 **PICO 4 标准版**（A8110 / Phoenix，国行 ROM 5.13.7）的 PICO 体感追踪器应用完整解锁。
