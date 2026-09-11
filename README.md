@@ -1,226 +1,116 @@
-# Pico 4 Tracker Limit Unlock (LSPosed Module)
+# PICO 4 Motion Tracker Unlock (2.0.5)
 
-针对 **Pico 4 (A8110, 国行, Android 10 / API 29 / 固件 5.13.7)** 的 Swift 追踪器配对数量上限解除模块。
+针对 **PICO 4 标准版**（A8110 / Phoenix，国行 ROM 5.13.7）的 PICO 体感追踪器应用完整解锁。
+通过 **Magisk 模块** 将 Ultra 的「体感追踪器 2.0.5」应用完整移植到标准版，
+**2 / 3 / 5 点追踪模式切换可用**。系统分区零修改，卸载即恢复原版。
 
-把系统对 **Swift 腿追配对数量** 的硬编码限制从 **2 个** 提升到 **2 / 3 / 5 应用内可切换**，通过 Zygisk Vector (LSPosed 兼容框架) 注入实现。
+> 📦 下载：[Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.0.zip`
+> 🔧 要求：Magisk 27+，PICO 4（标准版 / 其他被相同门禁限制的 4 系列）
 
 ---
 
-✅ **已在 Pico 4 5.13.7 CN 版本上实测通过，2/3/5 开关切换成功。**
-**说真的，只是可以切换，不知道生不生效，没法测试，这个项目放弃了。**
-⚠️ **注意：手上只有 3 个追踪器，无法实测配对第 4/5 个。**
-配置值写入/读回 5 已验证通过（日志可确认），但实际连接 5 个追踪器的场景未验证。
-若你遇到配对第 3 个以上时搜不到设备而非被提示拦截，请提 issue 反馈。
+## ✨ 解锁了什么
 
-## 一、效果
-
-| 项目 | 原厂 | 解锁后 |
+| 能力 | 原厂（标准版） | 解锁后 |
 |---|---|---|
-| 追踪器配对数量 | 2 或 3 个，设置页下拉可切换 | **2 / 3 / 5 个，设置页下拉可切换** |
+| 体感追踪器 2.0.5 应用 | 提示"设备不支持，请升级系统" | 完整可用 |
+| 追踪器配对数量 | 2 或 3（随穿戴模式固定） | **2 / 3 / 5 个，应用内切换** |
+| 2 / 3 / 5 点模式切换 | 无 / 不可用 | ✅ 即时生效 |
+| 特权权限 | 拿不到（签名不符） | priv-app 身份完整授予 |
+| 5 点（5tk_thigh） | Ultra 专属档位 | 系统层已放开（见下方说明） |
 
 ---
 
-## 二、技术架构
+## 📥 安装
 
-```
-Pico 4 (Android 10, API 29, 固件 5.13.7)
-└─ Magisk 30.7 (已修补 boot.img 提权)
-   └─ Zygisk Vector v2.2 (LSPosed 兼容框架 + 管理器)
-      └─ 本模块 com.picoxr.trackerlimit  (mid=16)
-           scope: com.pvr.swift
-```
+1. 确认已 root（Magisk 27+）
+2. Magisk → 模块 → 从本地安装 `PICO4_MotionTracker_2.0.5_v2.0.zip`
+3. 重启
+4. 打开「体感追踪器」应用，正常扫描配对 → 佩戴校准 → 开追
+
+## 🗑️ 卸载
+
+Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢复原厂状态。
 
 ---
 
-## 三、限制原理（根因分析）
+## 🔄 模式切换（2 / 3 / 5 点）
 
-`com.pvr.swift` 中追踪器上限受**多层控制**：
+- 应用 **设置页 → 数量上限**：选 3 或 5（选 3/5 时若已绑定数超目标会弹"先解绑"确认框，属原厂保护逻辑）
+- 应用 **穿戴模式页**：切换 2 点（2tk）/ 3 点（3tk_waist）/ 5 点（5tk_thigh），
+  确认时**自动联动配对上限**（2 点→2、3 点→3、5 点→5）
+- 所有切换即时生效，不依赖 PICO 配置服务的写权限
 
-| 层 | 位置 | 原厂值 | 处理方式 |
+> ⚠️ **注意：手上只有 3 个追踪器，无法实测配对5个。**
+> 系统层证据（MCU `tracker_num=5`、Stationservice 按 5 槽位工作）表明 5 点理论上可行，
+> 但满配 5 台的场景未经真机验证。配第 3 个以上遇到问题时欢迎提 issue 附 logcat。
+
+---
+
+## 🧩 原理：为什么需要这么多层
+
+标准版跑不了这个应用，不是一道门，是**五层叠加**：
+
+| # | 层 | 原厂行为 | 本方案处理 |
 |---|---|---|---|
-| Java 常量 | `SwiftDataSource.MAX_TRACKER_SIZE = 2` | 2 | `setStaticIntField` → 动态取上限 |
-| native 配置 | `SwiftImpl.getSwiftUpperLimit()` → native | 2 | afterHook 只做范围钳制，真实值透传 |
-| 配置存储 | `Utils.setConfig("com.pvr.swift.upper.limit", ...)` | — | 走 PICO 私有的 `ConfigurationClientService` AIDL 服务 |
-| 适配器 UI | `ConnectableTrackerAdapter` 内联 `>= 2` | 2 | 3 处 hook 绕过 |
-| 设置页 UI | `SwiftSettingFragment.showLimitTogglePopup()` | 2 选项(2/3) | **整体替换为 3 选项(2/3/5)** |
+| 1 | 产品档位门禁 | `ro.pxr.externalfunc=0` → 应用判定"设备不支持" | priv-app overlay + 强制放行检查 |
+| 2 | 特权权限 | 测试签名装 /data 拿不到 `SWIFT_ACCESS` 等 signature\|privileged 权限 | Magisk overlay 到 `/system/priv-app`，按"或"逻辑授予权限 |
+| 3 | Native 兼容 | 2.0.5 的 `libswift.so` 需要 P4 缺失的 `getSwiftTrackerInfoVector` 导出，垃圾数据直通 JNI → `negative array length` 崩溃循环 | 禁用对应 vtable 调用路径 |
+| 4 | 设备枚举 | 枚举接口不可用，设备列表恒为空，无法进入校准 | 改用系统 `statusChangedCallback` 回调缓存设备 |
+| 5 | 模式切换 | PICO 配置服务拒绝应用写入系统键（wear mode 卡在 5 点，limit 卡在 5） | 应用内 override，选择即时生效 |
 
-### 关键发现：`setSwiftUpperLimit()` 没有 native 钳制
+另有：配对用的 discovery 开关被应用的电源/前台可见性检查 ignore，已强制开启
+（这正是"点了扫描没反应"的直接原因）。
 
-```java
-setSwiftUpperLimit(int i) {
-    return Utils.setConfig("com.pvr.swift.upper.limit", String.valueOf(i)) ? 0 : -1;
-}
-```
-
-所以只要让 UI 能写进 5 就行，**不用强制改返回值**。默认 `SWIFT_UPPER_LIMIT_DEFAULT = 2`。
+完整的逆向过程、smali 改动清单、ARM64 二进制补丁细节和崩溃链分析见
+[FIX_NOTES.md](FIX_NOTES.md)（包括那条 `negative array length: -954437177` 的完整解剖）。
 
 ---
 
-## 四、配置项（system property，实时可调）
+## 🆚 与旧方案（LSPosed / Zygisk hook）的对比
 
-| 属性 | 默认 | 范围 | 作用 |
-|---|---|---|---|
-| `persist.pico.tracker.limit` | 5 | 2–10 | 追踪器上限钳制 |
-| `persist.pico.tracker.options` | `2,3,5` | — | 设置页下拉菜单有哪几项（逗号分隔） |
+本仓库最初是 LSPosed hook 方案（已在 v2.0 移除），差异：
 
-钳制范围是**保命**用的，防止填个离谱值进崩溃循环。
-
----
-
-## 五、Hook 实现详解
-
-### 5.1 `ShowLimitPopup` — 设置页下拉整体替换（核心）
-
-用 `XC_MethodReplacement` 完全替换 `SwiftSettingFragment.showLimitTogglePopup()`。
-菜单从 2 项变 **2/3/5**，使用 `getIdentifier()` 按资源名查 id（`swift2_setting_limit_count` plurals / `ic_swift_right` / `color_bfffffff`）。
-
-**为什么必须整体替换？**
-- 原版 lambda 监听器 `f0` 的 switch 只认两个分支（0 → 版本弹窗，default → 限制弹窗），塞第三项进不去。
-- 改用 `java.lang.reflect.Proxy` 自己实现 `AdapterView$OnItemClickListener`。
-
-**保留的原版保护逻辑：**
-- `isFastClick()` 防连点
-- 若选相同值，`togglePopup.dismiss()` 直接返回
-- 若 `repo.getDevices().size() == 3` 弹"先解绑多余追踪器" Toast
-- 选完后刷新 `binding.swiftSettingLimitText` 文案
-- 调用 `devicesSizeChanged.k(size)` 通知
-
-### 5.2 `SwiftUpperLimit` — 真实值透传+范围钳制
-
-`getSwiftUpperLimit()` afterHook：不再强制返回 5，只做 `min(max(val, 2), 上限)` 钳制并缓存。
-
-### 5.3 `BindLambda3Hook` — 绕过"已达上限"拦截
-
-`ConnectableTrackerAdapter$ConnectableTrackerViewHolder.bind$lambda-3` 遇到 `>= 2` 就弹 Toast 拦截。
-改成：还在上限内就调 `bind$lambda-0`（真正配对入口），只有真的满了才弹原版 Toast。
-
-### 5.4 `DlgBindLambda2Hook` — 绕过对话框配对拦截
-
-`ConnectDlgTrackerAdapter$ConnectableTrackerViewHolder.bind$lambda-2` 遇到 `>= 2` 就走拦截分支。
-改成：在限制内就把 `args[0]` 改 0，强制走 `createBindTracker` 分支。
-
-### 5.5 `CreateBindTrackerHook` — 绕过内联 `< 2` 检查
-
-`createBindTracker()` 内部还有一道 `if (bondedDevices.size() < 2)` 内联检查（Xposed 改不了方法体内常量）。
-before 里临时把 data source 的 bonded 列表字段换成空 `ArrayList`，让 `< 2` 判断通过，after 立刻换回来（用 ThreadLocal 保存）。
-
-### 5.6 `DeviceSizeChangedHook` — 修复配满 3 个后按钮消失
-
-`SwiftMainFragment.updateDeviceSizeChanged()` 中有一个硬编码的字面量 `3`，导致当配对设备数达到 3 个时，
-即使上限已被提高，`startPair` 按钮也会被无条件隐藏。
-afterHook 检查 `size >= 3 && size < limit && !isPairing` 时，手动把按钮设为可见并绑定点击事件。
+| | LSPosed hook（旧） | Magisk priv-app overlay（新） |
+|---|---|---|
+| 思路 | 运行时 hook 拦截检查 | 直接替换应用 + 二进制补丁 |
+| 崩溃风险 | 高（handleLoadPackage 阶段触发 ClassLoader 重入 → 崩溃循环；扫描阶段还有 hook 不到的方法体内硬编码） | 无 hook，改动随 APK 固化 |
+| 权限 | 仍拿不到 priv-app 特权 | ✅ 完整授予 |
+| native 层 | 无法覆盖（Xposed hook 不了 native） | ✅ 直接补丁 |
+| 依赖 | 需要 Zygisk Vector 框架 | 仅 Magisk |
+| 维护 | 每次 hook 点偏移变化都要改代码 | OTA 后重刷模块即可 |
 
 ---
 
-## 六、目录结构
+## ❓ 常见问题
+
+**Q：点了扫描设备没反应？**
+确认应用版本是 2.0.5 且模块已安装重启。v2.0 已强制开启 discovery，
+如仍有问题抓 logcat 过滤 `SwiftRepo|TrackingClient` 提 issue。
+
+**Q：配对成功后追踪器几秒就断链？**
+日志显示 `reason: tracker_power_off` 且 HMD 侧设置全部正确时，
+是追踪器自身固件问题（多见于对在线状态的追踪器执行过解绑）。
+**放回充电座充电几分钟或恢复出厂设置**后重新配对即可。
+
+**Q：5 点能用吗？**
+软件门已全开。但 5 点需要 5 台追踪器——手上只有 3 台，无法实测配对5个。
+
+**Q：系统 OTA 后失效了？**
+正常，Magisk overlay 在 OTA 后需要重刷模块 zip 再重启。
+
+---
+
+## 📦 校验（v2.0）
 
 ```
-pico4-trackerlimit/
-├── build_mod.bat                   # 构建脚本
-│                                   #   build_mod.bat mod_tracker com\picoxr\trackerlimit trackerlimit
-├── mod_tracker/                    # 模块源码
-│   ├── AndroidManifest.xml
-│   ├── apktool.yml
-│   ├── assets/xposed_init          # 入口类声明
-│   ├── res/values/arrays.xml       # xposedscope
-│   └── src/com/picoxr/trackerlimit/
-│       ├── TrackerLimit.java       # 入口（配置解析、hook 安装、上限决定）
-│       └── hook/
-│           ├── ShowLimitPopup.java      # 设置页下拉替换（核心）
-│           ├── SwiftUpperLimit.java     # 真实值透传+钳制
-│           ├── BindLambda3Hook.java     # 绕过"已达上限"拦截
-│           ├── DlgBindLambda2Hook.java  # 绕过对话框配对拦截
-│           ├── CreateBindTrackerHook.java  # 绕过内联 < 2 检查
-│           └── DeviceSizeChangedHook.java  # 修复按钮消失
-└── lsp_mod/                        # 数据库运维脚本
-    ├── db_syncpath.py              #   同步 apk_path（重装后必跑）
-    ├── db_restore.sh               #   推回数据库
-    ├── db_scope.py                 #   改 scope
-    ├── logs.sh / logs_full.sh      #   抓 Vector 日志
-    └── check_tracker.sh
+MD5:    3f8c378bc7e705e28fb1551a4789dd44
+SHA256: 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
 ```
 
----
+## 📄 文档
 
-## 七、构建环境（无 Android SDK 纯命令行）
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.0 版本说明
+- [FIX_NOTES.md](FIX_NOTES.md) — 完整逆向与踩坑记录
 
-这台机器**没有安装 Android SDK / android.jar**，平台类要手写 stub（仅编译用，不打进 dex）。
-
-- **JDK 26**：`C:\Program Files\Java\jdk-26.0.1`
-- **javac 必须 `--release 8`**（Java 26 默认出 class v52，d8 拒绝）
-- **r8.jar**（含 d8）：`java -cp r8.jar com.android.tools.r8.D8 --min-api 29 --output <dir> <classes>`
-- **Xposed API 用自写 stub**（`stub/de/robv/android/xposed/*`），d8 只 dex 模块自己的 class
-- **apktool** 打包 + **jarsigner** 自签（无 native lib 的模块 APK 不需要 zipalign）
-
-### ⚠️ 混淆版 Vector 框架的真实 Xposed API 签名
-Vector 对 Xposed API 做了混淆（类名如 `J.LWAmWX.cJwqEr.pds.yD.XposedHelpers`）。
-- `findAndHookMethod` 真实签名：**返回 `XC_MethodHook.Unhook`，不是 void！**
-- 必须用 `XposedHelpers.findAndHookMethod`，且 stub 要声明返回 `XC_MethodHook.Unhook`，否则运行时 `NoSuchMethodError`。
-
-### ⚠️ 混淆类（s5.* / r5.* / n5.*）字段/枚举名不可信
-jadx 打印的 `TYPE_TITLE_CHECK`、`f9351b` 等是它反混淆猜的名字，**真实 dex 里已被 R8 改掉**。
-只有**非混淆类**（如 `com.pvr.swift.fragment.SwiftSettingFragment`）的字段名才是真的。
-识别混淆枚举常量/字段用**资源 id 反查**或**按类型+默认值**匹配：
-- `s5.b` 枚举：按 `osui_item_title_check` 布局资源 id 反查（资源名不会被 R8 改）
-- `s5.a` 字段：title 是唯一 `CharSequence`；color 是 `int` 默认 0；iconRes 是 `int` 默认 **-1**
-
----
-
-## 八、部署流程
-
-1. **构建**：`cmd /c "build_mod.bat mod_tracker com\picoxr\trackerlimit trackerlimit 2>&1"`
-2. **安装**：`adb install -r build\apk\trackerlimit.apk`
-3. **同步 apk_path**（重装后必跑，否则 Vector 加载旧 dex）：`python lsp_mod\db_syncpath.py`
-4. **推回数据库**：`adb push` 后跑 `lsp_mod\db_restore.sh`（自动 chown/chmod + 清 wal/shm）
-5. **重启**：`adb reboot`
-
-### ⚠️ 崩溃循环止血
-`handleLoadPackage` 阶段**一行宿主类代码都不能执行**（会触发 `ClassLoader` 重入 → `ExceptionInInitializerError` → 无限崩溃重启）。
-止血：先在数据库把模块 `enabled=0`，重启，再改代码重建。
-
----
-
-## 九、已知残留风险
-
-- **追踪器扫描阶段**：`SwiftDataSource.startScan()` / `startScanImmediately()` 方法体内还有硬编码
-  `if (size < 2)`（Xposed 改不了方法体内常量）。
-  **判断依据**：如果配第 3 个时是"搜不到设备"（而非被提示拦），就是这里，需补 startScan hook。
-- **硬件验证**：用户手上只有 3 个追踪器，无法实测配对第 4/5 个。配置值写入/读回 5 已验证通过。
-
----
-
-## 十、验证状态
-
-- ✅ 设置页下拉显示 **2个 / 3个 / 5个** 三项，可选中并写回
-- ✅ 日志证据：
-  ```
-  PicoTrackerLimit: upper limit 3 -> 5
-  SwiftRepo:  swiftUpperLimit: 5
-  SwiftUtils: getConfig, com.pvr.swift.upper.limit 5
-  SwiftRepo:  setSwiftUpperLimit: 3 -> 0   (0 = success)
-  ```
-- ✅ 干净重启后模块注入一次、零崩溃、进程稳定
-
----
-
-## 十一、日志与诊断
-
-- Vector 日志：`/data/adb/lspd/log/{verbose_*,modules_*,kmsg}.log`
-- 崩溃：`adb logcat -d -b crash`
-- 追踪器配置：`adb logcat -d -s SwiftUtils:I | grep upper.limit`
-
----
-
-## 十二、网络环境备注（下载依赖时）
-
-- **GitHub release 资源被墙**：直连 + `ghfast.top` + `gh-proxy.com` + `mirror.ghproxy.com` 都返回 9 字节 "Not Found"
-- ✅ **`ghproxy.net` 可用**（唯一能下 GitHub release 的镜像）
-- F-Droid / IzzyOnDroid 不通，GitHub API 被限流
-
----
-
-## 十三、致谢
-
-- **more-picohaxx** (typlo) — bootloader 解锁工具
-- **FallenAngel** — 解锁流程社区指导
-- **Zygisk Vector** (JingMatrix) — LSPosed 兼容框架
+仅供学习研究，请支持正版。
