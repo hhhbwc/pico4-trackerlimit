@@ -1,10 +1,13 @@
 #!/system/bin/sh
 # 算法切换开关: 原厂 1.0.0.47 <-> Ultra 1.0.0.54
+# 模型挂载使用整目录 bind mount (stock 模型文件名与 ultra 不同, 逐文件挂载必失败)
 MOD=/data/adb/modules/pico4_swift_force_enable
 STATE=/data/adb/pico4_tracker/algo_state
 ULTRA_LIB=/data/adb/ultra/libAlgSwiftBodyPose.so
 STOCK_LIB=/data/adb/ultra/stock_lib.so
 LIB_DST=/system/lib64/libAlgSwiftBodyPose.so
+MODEL_SRC=/data/adb/ultra/cpu
+MODEL_DST=/system/etc/AlgSwift/s2/cpu
 SVC=pvrtrackingservice
 
 CUR=$(cat $STATE 2>/dev/null)
@@ -41,13 +44,12 @@ else
   echo "切换到: Ultra 算法 1.0.0.54"
   mount -o bind $ULTRA_LIB $LIB_DST
   chcon u:object_r:system_lib_file:s0 $LIB_DST 2>/dev/null
-  for f in /data/adb/ultra/cpu/*/*/model/*.bytenn; do
-    d="/system/etc/AlgSwift/s2/cpu/${f#/data/adb/ultra/cpu/}"
-    mkdir -p "$(dirname $d)" 2>/dev/null
-    mount -o bind "$f" "$d" 2>/dev/null
-  done
+  if [ -d "$MODEL_SRC" ] && [ -d "$MODEL_DST" ]; then
+    mount -o bind "$MODEL_SRC" "$MODEL_DST"
+    chcon -R u:object_r:system_file:s0 "$MODEL_DST" 2>/dev/null
+  fi
   cp $ULTRA_LIB "$MOD/system/lib64/libAlgSwiftBodyPose.so"
-  cp -r /data/adb/ultra/cpu/. "$MOD/system/etc/AlgSwift/s2/cpu/"
+  cp -r $MODEL_SRC/. "$MOD/system/etc/AlgSwift/s2/cpu/"
 fi
 
 echo "$NEW" > $STATE
