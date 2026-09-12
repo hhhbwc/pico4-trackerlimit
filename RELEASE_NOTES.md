@@ -13,6 +13,9 @@ v2.2 是 v2.1 的稳定增强版，当前最终包基于 v33 APK，真机验证�
 - 🐛 修复 shell 脚本 CRLF 行尾导致 `sh` 解析失败（执行按钮无法切换算法）
 - 🐛 修复 `customize.sh` 删除 `modules_update` 导致 Magisk 无法完成覆盖升级（v2.0→v2.2 升级失败）
 - 🐛 `service.sh` 开机自动补全 `ultra/` 算法套件（customize.sh 执行时文件可能尚未就绪）
+- 🐛 修复 NN 模型挂载：stock 与 Ultra 的模型文件名不同，逐文件 bind mount 必然失败（Ultra 一直没带模型在跑）；改为整目录 bind mount，真机验证 BODYPOSE 1.0.0.54/1.0.0.47 双向切换正确
+- 🐛 恢复 service.sh 消费 `unbond_pending` 标记（首次安装自动解绑一次，此前被算法挂载版 service.sh 覆盖时丢失）
+- 🐛 stock 模式开机不再无谓重启追踪服务
 - 🔖 修正 Magisk 模块元数据为 `version=v2.2` / `versionCode=6`
 
 ## v2.1 内容（保留）
@@ -43,7 +46,7 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 
 | 文件 | MD5 | SHA-256 |
 |---|---|---|
-| `PICO4_MotionTracker_2.0.5_v2.2.zip` | `9c3bb2266c0161880ed6d8d959470940` | `37b5eb30cc3a00869e143ab16ea7064fdb6e156cf12cda8eba4a6c2d936ff6be` |
+| `PICO4_MotionTracker_2.0.5_v2.2.zip` | `53f0d10f16d2039e6cad0199e2929062` | `e7e7e1ae03ae1fb36b59982f0418d61b068f142e6cb351e9eaee4e1e1650b5ca` |
 | `swift205_patched_v33.apk` | `e91c9647fcbf3a808ca22e842de8e013` | `cca149154ea7f5c0f3d161b9be6e459a883590c6e7799f3d31f6ea2889b82de7` |
 
 ZIP 内的 `system/priv-app/PvrSwift/PvrSwift.apk` 已验证与 `swift205_patched_v33.apk` 哈希一致。
