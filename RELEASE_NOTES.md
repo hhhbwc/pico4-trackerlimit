@@ -1,6 +1,6 @@
 # PICO 4 Motion Tracker Unlock v2.2
 
-v2.2 是 v2.1 的稳定增强版，当前最终包基于 v33 APK（源码含 v32 修复 + 本轮清理/版本修正 + SwiftImpl 版本锁死）。
+v2.2 是 v2.1 的稳定增强版，当前最终包基于 v33 APK（源码含 v32 修复 + 本轮清理/版本修正 + SwiftImpl 版本锁死 + CRLF/覆盖安装修复）。
 
 ## v2.2 新增
 
@@ -10,6 +10,8 @@ v2.2 是 v2.1 的稳定增强版，当前最终包基于 v33 APK（源码含 v32
 - 🐛 修复首次引导选择 3 点时，配对上限被旧代码覆盖回 5
 - 🐛 清理 `SwiftRepo.getSwiftVersion()` 不可达旧代码，避免旧版本切换/验证路径混淆
 - 🐛 `SwiftImpl.getSwiftVersion()` 也锁死返回 2，彻底切断所有 JNI 版本查询路径，消除 CoverFragment/SwiftToggleV2Opt 的 VerifyError 风险
+- 🐛 修复 shell 脚本 CRLF 行尾导致 `sh` 解析失败（执行按钮无法切换算法）
+- 🐛 修复 `customize.sh` 覆盖安装时删除当前模块目录导致 Magisk 无法恢复模块
 - 🔖 修正 Magisk 模块元数据为 `version=v2.2` / `versionCode=6`
 
 ## v2.1 内容（保留）
@@ -36,7 +38,7 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 
 | 文件 | MD5 | SHA-256 |
 |---|---|---|
-| `PICO4_MotionTracker_2.0.5_v2.2.zip` | `0b9f480d89488d7f17d8afd503c47f92` | `df01ef754c21f66bbe2b33ce4cb07a05325908b1bc66529c675e23313a17408e` |
+| `PICO4_MotionTracker_2.0.5_v2.2.zip` | `f2adf569e42aacc68d2f404f0d553481` | `4a9580548a11b751bb845c1e93302d2a5f2e9823cdbbc8227b7b2811088f70ab` |
 | `swift205_patched_v33.apk` | `e91c9647fcbf3a808ca22e842de8e013` | `cca149154ea7f5c0f3d161b9be6e459a883590c6e7799f3d31f6ea2889b82de7` |
 
 ZIP 内的 `system/priv-app/PvrSwift/PvrSwift.apk` 已验证与 `swift205_patched_v33.apk` 哈希一致。
