@@ -1,10 +1,20 @@
 #!/system/bin/sh
 # 开机按 algo_state 挂载对应算法 (ultra/stock)
+# 同时确保 ultra/ 算法套件已从模块目录复制到 /data/adb/ultra/
 STATE=/data/adb/pico4_tracker/algo_state
+MOD=/data/adb/modules/pico4_swift_force_enable
 ULTRA_LIB=/data/adb/ultra/libAlgSwiftBodyPose.so
 STOCK_LIB=/data/adb/ultra/stock_lib.so
 LIB_DST=/system/lib64/libAlgSwiftBodyPose.so
 SVC=pvrtrackingservice
+
+# 确保 ultra 套件存在（customize.sh 执行时文件可能尚未就绪，此处开机后补）
+if [ -d "$MOD/ultra" ] && [ ! -f "$ULTRA_LIB" ]; then
+  mkdir -p /data/adb/ultra /data/adb/pico4_tracker
+  cp -rf "$MOD/ultra/." /data/adb/ultra/ 2>/dev/null || true
+  cp -f "$MOD/toggle.sh" /data/adb/ultra/toggle.sh 2>/dev/null || true
+  chmod 755 /data/adb/ultra/toggle.sh 2>/dev/null || true
+fi
 
 [ -z "$(cat $STATE 2>/dev/null)" ] && echo ultra > $STATE
 MODE=$(cat $STATE)
