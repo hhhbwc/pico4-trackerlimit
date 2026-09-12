@@ -1,0 +1,6 @@
+id=pico4_swift_force_enable
+name=PICO 4 Motion Tracker Unlock (2.0.5)
+version=v2.1
+versionCode=5
+author=wzy
+description=Enable PICO Motion Tracker 2.0.5 full feature set on PICO 4 standard (ROM 5.13.x). Bypasses externalfunc/version gates (priv-app overlay, no system partition writes). Native compat: getTrackerDevices neutralized safely; device list via status callbacks. Mode switching 2/3/5-point works via in-app overrides. Now bundles the newer Ultra BODYPOSE algorithm (v1.0.0.54) + per-point NN models. Requires root (Magisk). After install, reboot. Use the ACTION button on this module page to switch BODYPOSE algorithm (ultra/stock) anytime.
