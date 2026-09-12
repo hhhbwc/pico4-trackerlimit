@@ -443,4 +443,15 @@ v2.1 模块内容: libAlgSwiftBodyPose.so (Ultra) + /system/etc/AlgSwift 模型
 "illegal signature" 购买框 = 测试签名的预期现象。
 
 当前产物: swift205_patched_v24.apk, md5 703757d2b2078b46a47f34b911a523db
-模块: PICO4_MotionTracker_2.0.5_v2.1.zip, md5 44796f97de8aafc41bbe8af921041e09
+模块: PICO4_MotionTracker_2.0.5_v2.1.zip, md5 0fa4732fcd8ff6cd3d362e6f210b716b
+  (sha256 b3f16ac82e13dbf2a2d2af486bcd2cc3be93001131008102ccbdea5418a0b3d1)
+
+新增: 仅首次安装自动解绑一次 (用户需求)
+- customize.sh 检测 /data/adb/modules/<id>/system/priv-app/PvrSwift/PvrSwift.apk:
+  存在 = 从旧版模块升级, 保留绑定; 不存在 = 原厂首装, 写
+  /data/adb/pico4_tracker/unbond_pending 标记
+- service.sh 开机检测标记, 等追踪服务起来 (+15s, 此时追踪器通常离线,
+  规避在线解绑的固件掉电坑), tracker_test unbond tracker1/2/3, 清标记
+- 解绑动作用官方测试程序 /system/bin/tracker_test (strings 确认支持
+  "unbond [tracker1/tracker2/tracker3]"), root 下调用
+- 升级用户 (v2.0 -> v2.1) 绑定不受影响
