@@ -486,3 +486,15 @@ v2.2 最终形态:
 模块包: PICO4_MotionTracker_2.0.5_v2.2.zip
   md5 f6e26f4f4b683c11b3601e3e56c0a7e7
   sha256 1e590b0d6667a9954517c1f0f387631fb8ab81b392a63a66680660876a3d428b
+
+### 锁定 Swift 2.0 (抛弃 1.0 代追踪器支持)
+
+用户决策: 本模块不再支持 1.0 代追踪器, 全力 2.0。
+
+- SwiftRepo.getSwiftVersion() 恒返回 2
+- SwiftRepo.setSwiftVersion(I) 强制入参为 2 (UI 选 1.0 也会落到 2.0)
+- SwiftSettingFragment.checkAndToggleSwiftVersion() 改为立即返回
+  (防止其 unBond(1) 副作用误伤绑定)
+
+产物: swift205_patched_v27.apk md5 203c6ac99fd54cc4776d62ecd589a273
+模块包同步更新 (v2.2 资产替换)。
