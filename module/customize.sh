@@ -3,40 +3,24 @@
 # ============================================================
 # 详细安装日志，失败自动落盘 /sdcard/pico4_install_<timestamp>.log
 # ============================================================
+
+# 用脚本自身所在目录定位模块文件（不依赖 $MODPATH）
+MODDIR=$(dirname "$0")
+
+# 同时记录日志和输出到终端
 INSTALL_LOG="/sdcard/pico4_install_$(date +%s).log"
-exec 3>&1  # 保存原始 stdout 到 fd 3
-exec 1>>"$INSTALL_LOG" 2>&1  # stdout/stderr 同时写文件和终端
+exec 2>&1 | tee "$INSTALL_LOG"
+
 set -x  # 开启 xtrace，每条命令执行前打印
 
 echo "=== Pico4 Tracker Unlock 安装日志 ==="
 echo "Time: $(date)"
 echo "MODPATH=$MODPATH"
-echo "PWD=$(pwd)"
+echo "MODDIR=$MODDIR"
 echo "id=$(id)"
-echo "MAGISK_VER=$MAGISK_VER"
-echo "=== 环境信息 ==="
-echo "PATH=$PATH"
-echo "=== /proc/mounts 相关 ==="
-grep -E 'pico4|pvr|AlgSwift' /proc/mounts
-echo "=== /data/adb/modules 目录 ==="
-ls -la /data/adb/modules/
-echo "=== 模块目录 ==="
-ls -la "$MODPATH" 2>/dev/null || echo "MODPATH 不存在: $MODPATH"
-echo "=== /proc/mounts 相关 ==="
-grep -E 'pico4|pvr|AlgSwift' /proc/mounts
+echo "=== 模块目录内容 ==="
+ls -la "$MODDIR" 2>/dev/null || echo "MODDIR 不存在: $MODDIR"
 echo "=== 开始安装 ==="
-
-# 关键步骤封装
-check_step() {
-    local step_name="$1"
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] $step_name 失败" >&2
-        echo "=== 安装失败，详见日志: $INSTALL_LOG ===" >&2
-        exit 1
-    else
-        echo "[OK] $step_name 成功"
-    fi
-}
 
 # ============================================================
 # 兼容覆盖安装：清理旧版本残留（幂等，升级/全新安装均安全）
@@ -52,8 +36,8 @@ for m in $(grep '/system/etc/AlgSwift' /proc/mounts 2>/dev/null | awk '{print $2
     umount "$m" 2>/dev/null
 done
 
-# 2. 只清理 modules_update 残留（不删 modules 下的当前目录）
-rm -rf /data/adb/modules_update/pico4_swift_force_enable
+# 2. 不删 modules_update 目录！Magisk 自己管理 modules_update 的生命周期。
+#    如果在 customize.sh 里删了 modules_update，Magisk 安装完成后就没有文件可复制到 modules。
 
 echo "[swift_force_enable] 旧挂载已清理（覆盖安装模式）"
 echo "--------------------------------------------------------"
@@ -92,12 +76,18 @@ fi
 # ---------------------------------------------------------------
 # 算法切换套件: 安装 ultra/stock 算法库 + 模型 + 切换脚本
 # (首次安装默认 ultra; 升级保留用户已选状态)
+# 用 $MODDIR（脚本自身目录）定位文件，确保在 modules_update 阶段也能找到
 # ---------------------------------------------------------------
 set -e
 mkdir -p /data/adb/ultra /data/adb/pico4_tracker
-# 复制算法库和模型 (使用 $MODPATH 获取模块文件实际路径)
-cp -rf "$MODPATH/ultra/." /data/adb/ultra/ 2>/dev/null || true
-cp -f "$MODPATH/toggle.sh" /data/adb/ultra/toggle.sh 2>/dev/null || true
+# 优先用脚本自身目录，其次用 $MODPATH
+SRCDIR="$MODDIR"
+if [ ! -d "$SRCDIR/ultra" ] && [ -n "$MODPATH" ] && [ -d "$MODPATH/ultra" ]; then
+    SRCDIR="$MODPATH"
+fi
+echo "[swift_force_enable] SRCDIR=$SRCDIR"
+cp -rf "$SRCDIR/ultra/." /data/adb/ultra/ 2>/dev/null || echo "[swift_force_enable] WARN: ultra copy failed"
+cp -f "$SRCDIR/toggle.sh" /data/adb/ultra/toggle.sh 2>/dev/null || echo "[swift_force_enable] WARN: toggle copy failed"
 chmod 755 /data/adb/ultra/toggle.sh 2>/dev/null || true
 if [ ! -f /data/adb/pico4_tracker/algo_state ]; then
   echo ultra > /data/adb/pico4_tracker/algo_state
