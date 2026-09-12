@@ -40,8 +40,10 @@ check_step() {
 
 # ============================================================
 # 兼容覆盖安装：清理旧版本残留（幂等，升级/全新安装均安全）
+# 注意：不能删除 /data/adb/modules/ 下的当前模块目录，
+# 因为 Magisk 在 customize.sh 执行后才把 modules_update 复制过去。
+# 只清理挂载点和 modules_update 残留即可。
 # ============================================================
-MODDIR="/data/adb/modules/pico4_swift_force_enable"
 
 # 1. 卸载可能残留的挂载点（幂等，失败不报错）
 umount /system/priv-app/PvrSwift/PvrSwift.apk 2>/dev/null
@@ -50,12 +52,10 @@ for m in $(grep '/system/etc/AlgSwift' /proc/mounts 2>/dev/null | awk '{print $2
     umount "$m" 2>/dev/null
 done
 
-# 2. 清理旧模块目录与残留 zip（幂等）
-rm -rf /data/adb/modules/pico4_swift_force_enable
-rm -f /data/adb/modules/pico4_swift_force_enable.zip
+# 2. 只清理 modules_update 残留（不删 modules 下的当前目录）
 rm -rf /data/adb/modules_update/pico4_swift_force_enable
 
-echo "[swift_force_enable] 旧版本残留已清理（覆盖安装模式）"
+echo "[swift_force_enable] 旧挂载已清理（覆盖安装模式）"
 echo "--------------------------------------------------------"
 
 MODID="pico4_swift_force_enable"
