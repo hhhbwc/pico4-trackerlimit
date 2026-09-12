@@ -33,10 +33,10 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 
 ## 校验（v2.2）
 
-```
-MD5:    c847c9137147a4a8e8d8975bfb11ab7b
-SHA256: 302c2d36424dd4b93a628c275403aaa0d1fb145d50c65c86169d7d495cbfd12a
-```
+| 文件 | MD5 | SHA-256 |
+|---|---|---|
+| `PICO4_MotionTracker_2.0.5_v2.2.zip` | `d28908a1589be955054881d772a5c3fe` | `eb09e457d38d702333d838b60cb6e2d32c83b500f7205fad0c2b8b40d8dbe577` |
+| `swift205_patched_v32.apk` | `08ac4c309a92361c8d002f1c347e91aa` | `55d3b058125ccfc6c5b4d8d4334abf7d25dbbe073a63ab09ee58698040fe921a` |
 
 ## 文档
 
