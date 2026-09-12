@@ -497,4 +497,14 @@ v2.2 最终形态:
   (防止其 unBond(1) 副作用误伤绑定)
 
 产物: swift205_patched_v27.apk md5 203c6ac99fd54cc4776d62ecd589a273
-模块包同步更新 (v2.2 资产替换)。
+
+v27 翻车记录: checkAndToggleSwiftVersion 清空时 .locals 0 但保留旧代码,
+死代码引用 v1-v3 超出寄存器范围 → VerifyError 崩溃循环
+("register index out of range (1 >= 1)")。
+教训: ART 校验器连不可达代码也校验寄存器范围, 清空方法必须
+整体删除旧代码体, 不能留尾巴。
+
+v28 修复: 整体替换为最小桩 (仅 return-void), 真机验证 0 VerifyError,
+应用与服务稳定。
+最终产物: swift205_patched_v28.apk md5 838e6286fb9471ac5f516ee19b806a13
+模块包已同步 (c847c913...)。
