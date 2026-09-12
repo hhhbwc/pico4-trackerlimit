@@ -113,3 +113,20 @@ SHA256: 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
 - [FIX_NOTES.md](FIX_NOTES.md) — full reverse-engineering & troubleshooting log
 
 For study and research only. Please support the original developers.
+
+---
+
+## ❓ More FAQ
+**Q: App keeps waiting for "DK trackers"?**
+DK (Developer Kit) is the product name of the 2.0 trackers — the 2.0.5 app runs in 2.0 mode by default.
+If you own the **1st-generation PICO Motion Tracker** (the Bluetooth-pairing one), go to
+Settings → Tracker Version → switch to **1.0** (unbind all paired trackers first).
+
+**Q: Switching to 2.0 fails ("version toggle failed")?**
+Unbind ALL paired trackers in the app first, then switch. If it still fails, run
+`adb shell setprop persist.pxr.tracking.swiftVersion 2` as root, restart the app and try again,
+and open an issue with `getprop persist.pxr.tracking.swiftVersion`, `ro.pxr.support.swiftversion` and logcat.
+
+**Q: PICO Store pops "Verification failed: illegal signature" and asks to buy?**
+Expected — the modified APK uses a test signature, not the store signature. Dismiss it.
+**Do NOT** buy/restore the store version — that would overwrite the unlock.

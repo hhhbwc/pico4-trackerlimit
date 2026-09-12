@@ -115,3 +115,21 @@ SHA256: 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
 - [FIX_NOTES.md](FIX_NOTES.md) — 完整逆向与踩坑记录
 
 仅供学习研究，请支持正版。
+
+---
+
+## ❓ 更多常见问题
+**Q：应用一直显示"连接 DK 追踪器"/等待 DK？**
+DK（Developer Kit）是 2.0 追踪器的产品名，2.0.5 应用默认运行在 2.0 模式。
+如果你用的是**一代 PICO Motion Tracker**（蓝牙配对那种），请到
+设置 → 追踪器版本 → 切到 **1.0**（切换前先解绑所有已配对追踪器）。
+
+**Q：切换 2.0 失败（提示"切换失败"）？**
+先在应用里解绑所有已配对追踪器再切。仍失败的话，root 下执行
+`adb shell setprop persist.pxr.tracking.swiftVersion 2` 后重启应用再试，
+并把 `getprop persist.pxr.tracking.swiftVersion` 和 `ro.pxr.support.swiftversion`
+的结果连同 logcat 提 issue。
+
+**Q：PICO 商店弹窗"Verification failed: illegal signature"并要求购买？**
+正常现象——修改版 APK 使用测试签名，不是商店签名。点取消忽略即可。
+**不要**购买/恢复商店版本，那会覆盖掉解锁。
