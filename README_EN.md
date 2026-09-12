@@ -103,8 +103,8 @@ Expected. The Magisk overlay needs the module re-flashed and a reboot after OTA.
 ## 📦 Checksums (v2.0)
 
 ```
-MD5:    f6e26f4f4b683c11b3601e3e56c0a7e7
-SHA256: 1e590b0d6667a9954517c1f0f387631fb8ab81b392a63a66680660876a3d428b
+MD5:    e431d01ba43d62aa799127f842dfdc83
+SHA256: f89449301fecae7627c022022c0741e198291927179709b4a98f5d2fec9093fa
 ```
 
 ## 📄 Docs
