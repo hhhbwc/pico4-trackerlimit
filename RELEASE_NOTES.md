@@ -1,4 +1,4 @@
-# PICO 4 Motion Tracker Unlock v2.0
+# PICO 4 Motion Tracker Unlock v2.2
 
 让 PICO 4 标准版（A8110, ROM 5.13.x）完整运行 PICO 体感追踪器 2.0.5 应用，
 支持 2/3/5 点追踪模式切换。基于 Magisk 模块，不修改系统分区。
@@ -17,7 +17,7 @@
 ## 安装
 
 1. 确认已 root（Magisk 27+）
-2. Magisk → 模块 → 从本地安装 `PICO4_MotionTracker_2.0.5_v2.0.zip`
+2. Magisk → 模块 → 从本地安装 `PICO4_MotionTracker_2.0.5_v2.2.zip`
 3. 重启
 4. 打开「体感追踪器」应用，正常配对/校准
 
@@ -49,8 +49,8 @@ Magisk 中删除本模块 → 重启 → 完全恢复原版。
 ## 校验
 
 ```
-MD5:    3f8c378bc7e705e28fb1551a4789dd44
-SHA256: 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
+MD5:    f6e26f4f4b683c11b3601e3e56c0a7e7
+SHA256: 1e590b0d6667a9954517c1f0f387631fb8ab81b392a63a66680660876a3d428b
 ```
 
 ## 致谢

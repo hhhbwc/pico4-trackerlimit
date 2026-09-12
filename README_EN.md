@@ -5,7 +5,7 @@
 Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, CN ROM 5.13.7).
 The Ultra edition's "Motion Tracker 2.0.5" app is fully ported via a **Magisk module**, with **2 / 3 / 5-point tracking mode switching**. Zero system partition modifications — uninstall restores everything.
 
-> 📦 Download: [Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.0.zip`
+> 📦 Download: [Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.2.zip`
 > 🔧 Requirements: Magisk 27+, PICO 4 (standard edition / other 4-series devices locked by the same gates)
 
 ---
@@ -24,7 +24,7 @@ The Ultra edition's "Motion Tracker 2.0.5" app is fully ported via a **Magisk mo
 ## 📥 Install
 
 1. Make sure you are rooted (Magisk 27+)
-2. Magisk → Modules → Install from storage → `PICO4_MotionTracker_2.0.5_v2.0.zip`
+2. Magisk → Modules → Install from storage → `PICO4_MotionTracker_2.0.5_v2.2.zip`
 3. Reboot
 4. Open the "Motion Tracker" app: scan & pair → wear calibration → go
 
@@ -103,8 +103,8 @@ Expected. The Magisk overlay needs the module re-flashed and a reboot after OTA.
 ## 📦 Checksums (v2.0)
 
 ```
-MD5:    3f8c378bc7e705e28fb1551a4789dd44
-SHA256: 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
+MD5:    f6e26f4f4b683c11b3601e3e56c0a7e7
+SHA256: 1e590b0d6667a9954517c1f0f387631fb8ab81b392a63a66680660876a3d428b
 ```
 
 ## 📄 Docs

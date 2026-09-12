@@ -6,7 +6,7 @@
 通过 **Magisk 模块** 将 Ultra 的「体感追踪器 2.0.5」应用完整移植到标准版，
 **2 / 3 / 5 点追踪模式切换可用**。系统分区零修改，卸载即恢复原版。
 
-> 📦 下载：[Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.0.zip`
+> 📦 下载：[Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.2.zip`
 > 🔧 要求：Magisk 27+，PICO 4（标准版 / 其他被相同门禁限制的 4 系列）
 
 ---
@@ -25,7 +25,7 @@
 ## 📥 安装
 
 1. 确认已 root（Magisk 27+）
-2. Magisk → 模块 → 从本地安装 `PICO4_MotionTracker_2.0.5_v2.0.zip`
+2. Magisk → 模块 → 从本地安装 `PICO4_MotionTracker_2.0.5_v2.2.zip`
 3. 重启
 4. 打开「体感追踪器」应用，正常扫描配对 → 佩戴校准 → 开追
 
@@ -105,8 +105,8 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 ## 📦 校验（v2.0）
 
 ```
-MD5:    3f8c378bc7e705e28fb1551a4789dd44
-SHA256: 42be4bb94919cfa5ea8db4549c14bd8966df363e82020331222993c1c9f81fe5
+MD5:    f6e26f4f4b683c11b3601e3e56c0a7e7
+SHA256: 1e590b0d6667a9954517c1f0f387631fb8ab81b392a63a66680660876a3d428b
 ```
 
 ## 📄 文档

@@ -467,3 +467,22 @@ v2.1 模块内容: libAlgSwiftBodyPose.so (Ultra) + /system/etc/AlgSwift 模型
 - 状态: 本地暂存, 未发布 release (攒批次)
 - 产物: swift205_patched_v25.apk md5 d2eee0594f5ce6ef5c5e348eef802a8c,
   PICO4_MotionTracker_2.0.5_v2.2.zip md5 f62398a7100462b099b1e9b48d5bf329
+
+### v2.2 (发布) — 签名回退决策 + 最终形态
+
+用户决策: 撤销 keystore 轮换, 恢复 test.keystore 签名 —— 老用户
+(v2.0/v2.1 test 签名) 无需卸载即可直接覆盖升级, 签名连续性优先于
+密钥卫生。文档中的密码行保持删除状态 (不再公开密码, 但密钥沿用)。
+
+v2.2 最终形态:
+- v26 APK (持久化 + 首次引导修复), test.keystore 签名
+  md5 92332af3da576fdf7d9df4e1204cc475
+- 模块内置 Ultra 算法 (lib + 模型) + 切换套件
+- service.sh 开机按 algo_state 挂载 (缺省 ultra)
+- action.sh = Magisk 模块页"执行"按钮, 一键原厂⇄Ultra, 状态持久化
+- 模块 system/lib64 保留 stock lib overlay (开机早于 service.sh
+  挂载的窗口期保证有可用算法库, 避免 17:4x 的空文件崩溃循环)
+
+模块包: PICO4_MotionTracker_2.0.5_v2.2.zip
+  md5 f6e26f4f4b683c11b3601e3e56c0a7e7
+  sha256 1e590b0d6667a9954517c1f0f387631fb8ab81b392a63a66680660876a3d428b
