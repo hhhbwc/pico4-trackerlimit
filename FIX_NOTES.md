@@ -105,8 +105,6 @@ Magisk 用 bind mount 覆盖, 系统按 priv-app 身份加载 → privileged 分
 ## 八、注意
 
 - 系统 OTA 升级后 Magisk 模块可能失效, 需重新安装
-- 改装 APK 用测试签名 (test.keystore, alias=test, 密码 android)
-  keystore 在 C:\tmp\swift_mod\test.keystore
 - 2.0.5 的 externalfunc 阈值是 0x23a (570), 2.0.4 是 0x226 (550)
   本次基于 2.0.4 改装, 阈值更宽松
 - 5 点动捕取决于 ro.pxr.support.swiftversion=3 和 persist.pxr.tracking.swiftVersion=2
