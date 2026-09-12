@@ -455,3 +455,17 @@ v2.1 模块内容: libAlgSwiftBodyPose.so (Ultra) + /system/etc/AlgSwift 模型
 - 解绑动作用官方测试程序 /system/bin/tracker_test (strings 确认支持
   "unbond [tracker1/tracker2/tracker3]"), root 下调用
 - 升级用户 (v2.0 -> v2.1) 绑定不受影响
+
+### v2.2 (暂存, 未发布)
+
+- Swift 版本/上限 override 持久化: SwiftStateManager 新增
+  getModWearMode/setModWearMode (key_mod_wear_mode) 与
+  getModUpperLimit/setModUpperLimit (key_mod_upper_limit), 默认 -1;
+  Utils.getWearMode / SwiftImpl.getSwiftUpperLimit 优先级改为
+  内存 override -> 持久 prefs -> 内置默认 (wear="2"/3点, limit=3),
+  不再读卡死的系统配置。用户切换后跨应用重启生效。
+- keystore 轮换: 新专用 release keystore 签名 (pico4tracker),
+  旧 test.keystore 密码已从文档移除 (git 历史仍在, 作废该密钥即可)
+- 状态: 本地暂存, 未发布 release (攒批次)
+- 产物: swift205_patched_v25.apk md5 d2eee0594f5ce6ef5c5e348eef802a8c,
+  PICO4_MotionTracker_2.0.5_v2.2.zip md5 f62398a7100462b099b1e9b48d5bf329
