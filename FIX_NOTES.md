@@ -409,3 +409,38 @@ setWearMode 已被 v22 override 覆盖, 均即时生效。
   - module.prop version=v2.0 (versionCode 4), 内含 README
 - 附件: 模块 zip + swift205_patched_v23.apk (118MB 超 git 单文件限制, 只放 Release)
 - 文档: README 三语 (中/EN/RU) + RELEASE_NOTES + 本记录
+
+### v2.1: Ultra BODYPOSE 算法移植成功 (2026-09-12)
+
+Ubuntu_User 从 Ultra 固件 (5.15.7 sparrow) 提取了完整算法栈, 关键修正:
+getSwiftTrackerInfoVector 在 /system_ext/lib64/libtrackingclient.pxr.so
+(客户端库), 服务端算法在 pvrtrackingservice + libAlgSwiftBodyPose.so,
+模型为 /system/etc/AlgSwift/s2/cpu/ 下的外部 .bytenn 文件 (CPU 后端, 按
+点数分装: tracker2/3/5_forearm/tracker5_knee + 足底 LSTM)。
+
+符号级 diff 结论:
+- 两版 libAlgSwiftBodyPose.so 导出集完全一致 (各 5642, 差集为零) → ABI 兼容
+- DT_NEEDED 完全一致 (libbytenn/libSNPE 等, 标准 ROM 全有)
+- 共享 .cpt 配置字节级相同 (swift_tracker_online.json.cpt md5 一致)
+
+真机验证 (bind mount + 重启追踪服务, 不重启设备):
+- 旧算法 BODYPOSE 1.0.0.47 → **1.0.0.54** (Ultra 新算法在标准版运行)
+- 中途重启服务的坑: 新服务实例错过座子 wakeUp 状态推送,
+  stationServiceReady 卡 0 / 绑定显示为空; 唤醒头显后自动重握手恢复,
+  三台绑定记录全部自动恢复 (绑定存在座子侧, 不会丢)
+- 用户实测: "The port was successful, and it feels even more accurate than before"
+
+v2.1 模块内容: libAlgSwiftBodyPose.so (Ultra) + /system/etc/AlgSwift 模型
+以 Magisk overlay 方式打包, 开机自动生效, 无需 bind mount。
+
+同时修复: WearModeFragment 首次引导 (from=cover) 分支会用
+`setSwiftUpperLimit(0/2/5)` 覆盖掉 setWearModeWithLimit 刚设置的上限
+(选 3 点被改回 5), 已移除该分支的三处调用。
+
+用户报告汇总 (群): VirtualDJ 5.13.8 (abl 重刷修复 root 后模块生效),
+卡 1.0 模式问题 = 应用默认 2.0 模式等待 DK (Developer Kit, 2.0 追踪器
+产品名) 追踪器, 一代用户需在设置里切 1.0; PICO 商店弹
+"illegal signature" 购买框 = 测试签名的预期现象。
+
+当前产物: swift205_patched_v24.apk, md5 703757d2b2078b46a47f34b911a523db
+模块: PICO4_MotionTracker_2.0.5_v2.1.zip, md5 44796f97de8aafc41bbe8af921041e09
