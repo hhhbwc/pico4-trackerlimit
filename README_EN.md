@@ -2,11 +2,25 @@
 
 # PICO 4 Motion Tracker Unlock (2.0.5)
 
-Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, CN ROM 5.13.7).
-The Ultra edition's "Motion Tracker 2.0.5" app is fully ported via a **Magisk module**, with **2 / 3 / 5-point tracking mode switching**. Zero system partition modifications — uninstall restores everything.
+Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, ROM 5.13.x).
+The app is enabled via a **Magisk module**: **tracker detection works, and install / upgrade / uninstall are fully reliable**. Zero system partition modifications — uninstall restores stock.
 
-> 📦 Download: [Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.2.zip`
-> 🔧 Requirements: Magisk 27+, PICO 4 (standard edition / other 4-series devices locked by the same gates)
+> 📦 Download: [Releases](../../releases) → **v2.6** (Standard / Performance / EXTREME)
+> 🔧 Requirements: Magisk 27+, PICO 4 standard edition (or other 4-series devices behind the same gates)
+
+---
+
+## 🆕 What v2.6 fixes
+
+| # | Old issue | v2.6 fix |
+|---|---|---|
+| 1 | Tracker list always empty (no devices found) | ✅ **Native compat layer** supplies the symbol missing from P4 firmware; device list works (verified with 3 trackers) |
+| 2 | Version number not updated after upgrade / stuck after uninstall / app won't open after switching | ✅ **Automatic PackageManager parse-cache handling** in both directions (self-healing on boot) |
+| 3 | Leftovers when upgrading from old versions | ✅ Auto-cleanup of v2.0–v2.4 residue; tracker bonds preserved |
+| 4 | Persistent properties left by performance flavors | ✅ Non-persistent writes + auto-restore on uninstall |
+| 5 | Switching flavors required uninstall | 🔁 **Cross-flashable flavors** (same module ID, no uninstall, bonds kept) |
+
+> ⚠️ Upgrading from v2.0–v2.4: just install v2.6 over it — no uninstall needed.
 
 ---
 
@@ -14,119 +28,99 @@ The Ultra edition's "Motion Tracker 2.0.5" app is fully ported via a **Magisk mo
 
 | Capability | Stock (standard edition) | After unlock |
 |---|---|---|
-| Motion Tracker 2.0.5 app | "Device not supported, please upgrade" | Fully working |
-| Tracker pairing limit | 2 or 3 (fixed by wear mode) | **2 / 3 / 5, switchable in-app** |
+| Motion Tracker 2.0.5 app | "Device not supported, please upgrade" | Fully working (**stock APK, original signature, zero modifications**) |
+| Tracker detection | — | ✅ List / connect / calibrate |
 | Privileged permissions | Unobtainable (signature mismatch) | Full priv-app grant |
-| 5-point (5tk_thigh) | Ultra-only tier | Unlocked at system level (see below) |
+| Tracker count | 2 or 3 (fixed by wear mode) | 2 / 3 / 5, following official app flows |
+| 5-point (forearm / knee) | Ultra-only tier | Unlocked at system level (5 trackers required) |
 
 ---
 
-## 📥 Install
+## 📥 Install / Upgrade / Uninstall
 
-1. Make sure you are rooted (Magisk 27+)
-2. Magisk → Modules → Install from storage → `PICO4_MotionTracker_2.0.5_v2.2.zip`
+### Install
+1. Make sure you're rooted (Magisk 27+)
+2. Magisk → Modules → Install from storage → pick a flavor ZIP
 3. Reboot
-4. Open the "Motion Tracker" app: scan & pair → wear calibration → go
+4. Open the "Motion Tracker" app
 
-## 🗑️ Uninstall
+### Upgrade (from any old version)
+Just flash the new ZIP over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept.
 
-Remove the module in Magisk → reboot. The system partition is never touched, everything reverts to stock.
+### Cross-flashing flavors
+Standard / Performance / EXTREME are the same module (different tuning) — flash any other ZIP at any time.
 
----
+### Uninstall
+Remove the module in Magisk → reboot. The system partition was never touched; stock 2.0.4 is restored automatically.
 
-## 🔄 Mode switching (2 / 3 / 5-point)
-
-- **Settings → Tracker limit**: choose 3 or 5 (if more devices are already bonded than the target, a stock "unpair first" confirmation appears)
-- **Wear mode page**: switch 2-point (2tk) / 3-point (3tk_waist) / 5-point (5tk_thigh); confirming **automatically syncs the pairing limit** (2pt→2, 3pt→3, 5pt→5)
-- All switches take effect immediately, no dependency on PICO config service write access
-
-> ⚠️ **Note: I only have 3 trackers, so pairing 5 could not be tested.**
-> System-level evidence (MCU `tracker_num=5`, Stationservice working with 5 slots) suggests 5-point is feasible,
-> but a fully-populated 5-tracker setup has not been verified on real hardware. If you hit issues pairing beyond the 3rd tracker, open an issue with logcat attached.
-
----
-
-## 🧩 How it works: why so many layers
-
-The app refuses to run on the standard edition because of **five stacked gates**:
-
-| # | Layer | Stock behavior | Fix |
-|---|---|---|---|
-| 1 | Product-tier gate | `ro.pxr.externalfunc=0` → app reports "device not supported" | priv-app overlay + forced checks |
-| 2 | Privileged permissions | Test-signed /data install can't get `SWIFT_ACCESS` etc. (signature\|privileged) | Magisk overlay to `/system/priv-app`, permissions granted via "or" logic |
-| 3 | Native compat | 2.0.5 `libswift.so` requires the `getSwiftTrackerInfoVector` export missing on P4 → garbage data straight to JNI → `negative array length` crash loop | Corresponding vtable call path disabled |
-| 4 | Device enumeration | Enumeration unusable, device list always empty, calibration unreachable | Device list rebuilt from system `statusChangedCallback` |
-| 5 | Mode switching | PICO config service rejects app writes to system keys (wear mode stuck at 5-point, limit stuck at 5) | In-app override, immediate effect |
-
-Also: the discovery switch used for pairing was ignored due to the app's power/foreground-visibility checks — now forced on
-(that was the direct cause of "tapped scan, nothing happened").
-
-The full reverse-engineering story — smali changes, ARM64 binary patches and the crash-chain analysis — is in
-[FIX_NOTES.md](FIX_NOTES.md) (including the complete anatomy of `negative array length: -954437177`).
-
----
-
-## 🆚 Old approach (LSPosed / Zygisk hook) comparison
-
-This repo originally hosted an LSPosed hook solution (removed in v2.0):
-
-| | LSPosed hook (old) | Magisk priv-app overlay (new) |
+| Flavor | Notes | Download |
 |---|---|---|
-| Approach | Runtime hooks intercepting checks | App replacement + binary patches |
-| Crash risk | High (ClassLoader re-entry at handleLoadPackage → crash loop; method-body hardcoded checks unreachable by hooks) | No hooks, changes baked into the APK |
-| Permissions | Priv-app privileges still unobtainable | ✅ Fully granted |
-| Native layer | Not covered (Xposed can't hook native) | ✅ Patched directly |
-| Dependencies | Zygisk Vector framework | Magisk only |
-| Maintenance | Every offset change requires code edits | Re-flash module after OTA |
+| ⭐ Standard | Recommended daily | [`PICO4_MotionTracker_v2.6_standard.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_standard.zip) |
+| 🚀 Performance | CPU performance tuning | [`PICO4_MotionTracker_v2.6_performance.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_performance.zip) |
+| 🔥 EXTREME | Max performance (high power) | [`PICO4_MotionTracker_v2.6_extreme.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_extreme.zip) |
+
+---
+
+## 🔧 How it works (v2.6)
+
+| # | Layer | Details |
+|---|---|---|
+| 1 | Gate bypass | priv-app overlay: the **stock 2.0.5 APK** is placed into `/system/priv-app` (original signature), bypassing the `ro.pxr.externalfunc` check |
+| 2 | Privileges | Runs as a system app — privileged permissions fully granted |
+| 3 | **Native compat layer** | 2.0.5 needs `getSwiftTrackerInfoVector`, missing from P4 firmware — fixed by patching the system tracking lib (one extra dependency) + a tiny forwarding shim |
+| 4 | **Version-switch lifecycle** | Automatically invalidates the PackageManager parse cache (both install and uninstall directions) |
+| 5 | Property hygiene | Performance properties written non-persistently; restored on uninstall |
+
+> Full technical notes: [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md). History (v2.0–v2.3): [FIX_NOTES.md](FIX_NOTES.md).
+
+---
+
+## ✅ Verified (real device)
+
+- PICO 4 A8110 / PUI 5.13.7 / Magisk, 3 Motion Trackers
+- **v2.4 → v2.6 upgrade**: version auto-updated, app opens, all 3 trackers detected
+- **v2.6 uninstall**: version falls back to 2.0.4, stock app works, zero residue
+- **Cross-flash**: Standard ⇄ Performance ⇄ EXTREME verified both ways
+- Tracker firmware sv1.89 / sv1.91 both verified working
 
 ---
 
 ## ❓ FAQ
 
-**Q: Tapped scan, nothing happens?**
-Make sure the app is 2.0.5 and the module is installed (rebooted). v2.0 force-enables discovery;
-if it still fails, attach logcat filtered by `SwiftRepo|TrackingClient` to an issue.
+**Q: Tracker list is empty?**
+Fixed in v2.6. If it still happens, open an issue with `adb logcat | grep -E "Swift205Shim|devices:"`.
 
-**Q: Tracker disconnects seconds after successful pairing?**
-Log shows `reason: tracker_power_off` while all HMD-side settings are correct —
-that's tracker-side firmware trouble (usually after unbinding a tracker while it was online).
-**Put it on the charging dock for a few minutes or factory-reset it**, then pair again.
+**Q: Version number wrong / app won't open after switching?**
+Handled automatically since v2.6 (self-healing on every boot).
 
-**Q: Does 5-point work?**
-All software gates are open. But 5-point needs 5 trackers — I only have 3, so pairing 5 could not be tested.
+**Q: "illegal signature" popup from the store?**
+Since v2.4 the module uses the stock APK — no test-signature issues. Just install v2.6.
 
-**Q: Broken after a system OTA?**
-Expected. The Magisk overlay needs the module re-flashed and a reboot after OTA.
+**Q: 1st-gen trackers (DK / 1.0)?**
+This project targets 2nd-gen trackers. For gen-1: Settings → Tracker version → 1.0.
 
----
+**Q: Breaks after system OTA?**
+Expected — re-flash the module ZIP and reboot.
 
-## 📦 Checksums (v2.0)
+**Q: 5-point mode?**
+Needs 5 trackers; not fully tested with 5 units (system-level evidence shows 5 slots supported).
 
-```
-MD5:    c847c9137147a4a8e8d8975bfb11ab7b
-SHA256: f89449301fecae7627c022022c0741e198291927179709b4a98f5d2fec9093fa
-```
-
-## 📄 Docs
-
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.0 release notes
-- [FIX_NOTES.md](FIX_NOTES.md) — full reverse-engineering & troubleshooting log
-
-For study and research only. Please support the original developers.
+**Q: Can I downgrade to an older module version?**
+Yes — flash any older ZIP (v2.6 handles the cache automatically).
 
 ---
 
-## ❓ More FAQ
-**Q: App keeps waiting for "DK trackers"?**
-DK (Developer Kit) is the product name of the 2.0 trackers — the 2.0.5 app runs in 2.0 mode by default.
-If you own the **1st-generation PICO Motion Tracker** (the Bluetooth-pairing one), go to
-Settings → Tracker Version → switch to **1.0** (unbind all paired trackers first).
+## 📄 Docs & version history
 
-**Q: Switching to 2.0 fails ("version toggle failed")?**
-Unbind ALL paired trackers in the app first, then switch. If it still fails, run
-`adb shell setprop persist.pxr.tracking.swiftVersion 2` as root, restart the app and try again,
-and open an issue with `getprop persist.pxr.tracking.swiftVersion`, `ro.pxr.support.swiftversion` and logcat.
+- [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 release notes
+- [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md) — full v2.4–v2.6 technical notes
+- [FIX_NOTES.md](FIX_NOTES.md) — v2.0–v2.3 reverse-engineering log (historical)
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.3 release notes (historical)
 
-**Q: PICO Store pops "Verification failed: illegal signature" and asks to buy?**
-Expected — the modified APK uses a test signature, not the store signature. Dismiss it.
-**Do NOT** buy/restore the store version — that would overwrite the unlock.
+## 🔗 Related projects
+
+- **[pico4-tracker-firmware](https://github.com/hhhbwc/pico4-tracker-firmware)** — PICO Motion Tracker firmware update/downgrade toolkit
+
+---
+
+For learning & research only. Community project, not affiliated with PICO.

@@ -1,9 +1,12 @@
 #!/system/bin/sh
-# Magisk 模块页面"执行"按钮: 一键切换算法
 echo "================================"
-echo " PICO 4 Motion Tracker 算法切换"
+echo " PICO 4 Motion Tracker v2.6 (原版算法)"
 echo "================================"
-sh /data/adb/ultra/toggle.sh
+echo "本版本仅使用原版 BODYPOSE 1.0.0.47 算法"
+echo "无需切换算法，无需重启追踪服务"
+echo ""
+echo "兼容修复 (v2.6):"
+echo "- 追踪器检测: native 兼容层 (libswift205shim)"
+echo "- 版本显示/回滚: PMS 解析缓存自动刷新"
 echo "================================"
-echo " 提示: 追踪服务已重启, 重新进入应用即可"
-echo "================================"
+exit 0

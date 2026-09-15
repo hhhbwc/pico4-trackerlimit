@@ -1,30 +1,46 @@
-# PICO 4 Motion Tracker Unlock (2.0.5)
+# module/ — v2.6 模块源码
 
-让 PICO 4 标准版（ROM 5.13.x）完整使用 PICO 体感追踪器 2.0.5 应用，
-包含 2/3/5 点追踪模式切换。
+本目录为 **v2.6 模块的源码镜像**（与 Releases 中 `PICO4_MotionTracker_v2.6_*.zip` 内文件一致；
+不含 `system/priv-app/PvrSwift/PvrSwift.apk` 载荷——APK 为 Pico 原版文件，请从 Release ZIP 获取）。
 
-## 原理
+## 结构
 
-- 通过 Magisk overlay 将修改版 PvrSwift.apk 放入 priv-app，获得特权权限
-  （com.picovr.permission.SWIFT_ACCESS / os.permission.BIND_TEA_TRACKER_SERVICE）
-- 绕过 ro.pxr.externalfunc 门禁（P4 标准版为 0，Ultra 为 1）
-- libswift.so 兼容补丁：禁用 P4 缺失符号的 native 枚举路径（防崩溃），
-  设备列表改由系统状态回调驱动
-- 2/3/5 点模式切换通过应用内 override 即时生效
-  （系统配置服务拒绝写入，固件槽位实际支持 5 个）
+```
+module.prop            模块元数据（version=v2.6 / versionCode=11）
+customize.sh           安装脚本（备份、旧版残留清理、解析缓存清理、状态）
+post-fs-data.sh        开机早段：清理 PMS 解析缓存（版本切换自愈的关键）
+service.sh             开机后段：兼容层自检
+toggle.sh              安装期辅助脚本（消费首次安装的解绑标记）
+action.sh              Magisk「执行」按钮文案
+uninstall.sh           卸载清理（缓存失效 + 属性还原）
+system/lib64/
+  libswift205shim.so         native 兼容层（转发库，本仓库源码见 native/）
+  libtrackingclient.pxr.so   补丁版系统库（仅 +1 条 DT_NEEDED 依赖）
+native/
+  libswift205shim.c          转发库源码
+```
 
-## 安装
+## 工作原理
 
-1. Magisk → 模块 → 从本地安装本 zip
-2. 重启
-3. 打开"体感追踪器"应用
+见仓库根目录 [FIX_NOTES_v2.6.md](../FIX_NOTES_v2.6.md)：
 
-## 卸载
+1. priv-app overlay 原版 2.0.5 APK（原签名、零修改）绕过 `ro.pxr.externalfunc` 门禁；
+2. native 兼容层补齐 P4 缺失的 `getSwiftTrackerInfoVector` 符号（转发到旧接口）；
+3. PMS 解析缓存双向自动处理，保证升级/卸载闭环（版本号、资源、启动全部正确）。
 
-Magisk 中移除模块并重启即可，系统分区未被修改，自动恢复原版。
+## 构建
 
-## 已知事项
+```bash
+# 转发库（aarch64）
+aarch64-linux-gnu-gcc -shared -nostdlib -fPIC -O2 -ffreestanding -fno-builtin \
+    -fno-stack-protector -fno-asynchronous-unwind-tables \
+    -Wl,-soname,libswift205shim.so -o system/lib64/libswift205shim.so native/libswift205shim.c
 
-- 5 点模式需要 5 台追踪器（P4 标准版固件槽位支持 5 个，未实测满配）
-- 对在线状态的追踪器执行解绑可能导致其固件状态异常（连接数秒后自动关机），
-  放回充电座充电或恢复出厂后可恢复
+# 系统库补丁
+patchelf --add-needed libswift205shim.so libtrackingclient.pxr.so
+```
+
+打包：将本目录内容放入 Magisk 模块 zip 根（并把 `PvrSwift.apk` 放入
+`system/priv-app/PvrSwift/PvrSwift.apk`），安装脚本会自动处理其余事项。
+
+仅供学习研究，请支持正版。

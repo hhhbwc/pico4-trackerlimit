@@ -2,134 +2,129 @@
 
 # PICO 4 Motion Tracker Unlock (2.0.5)
 
-针对 **PICO 4 标准版**（A8110 / Phoenix，国行 ROM 5.13.7）的 PICO 体感追踪器应用完整解锁。
-通过 **Magisk 模块** 将 Ultra 的「体感追踪器 2.0.5」应用完整移植到标准版，
-**2 / 3 / 5 点追踪模式切换可用**。系统分区零修改，卸载即恢复原版。
+针对 **PICO 4 标准版**（A8110 / Phoenix，ROM 5.13.x）的 PICO 体感追踪器应用完整解锁。
+通过 **Magisk 模块** 在标准版上完整启用「体感追踪器 2.0.5」应用：
+**追踪器检测正常、版本切换/升级/卸载全链路可靠**。系统分区零修改，卸载即恢复原版。
 
-> 📦 下载：[Releases](../../releases) → `PICO4_MotionTracker_2.0.5_v2.2.zip`
-> 🔧 要求：Magisk 27+，PICO 4（标准版 / 其他被相同门禁限制的 4 系列）
+> 📦 下载：[Releases](../../releases) → **v2.6**（Standard / Performance / EXTREME 三档）
+> 🔧 要求：Magisk 27+，PICO 4 标准版（或受相同门禁限制的 4 系列设备）
 
 ---
 
-## ✨ 解锁了什么
+## 🆕 v2.6 修复了什么（从"能用"到"可靠"）
+
+| # | 旧版问题 | v2.6 修复 |
+|---|---|---|
+| 1 | 追踪器检测为空（应用里永远没有设备） | ✅ **native 兼容层**补齐 P4 固件缺失符号，设备列表正常（3 台真机验证） |
+| 2 | 升级后版本号不变 / 卸载后回不去 / 切换版本后打不开应用 | ✅ **PMS 解析缓存双向自动处理**（开机自愈，无需手动干预） |
+| 3 | 旧版升级链路残留、升级后行为不一致 | ✅ 覆盖安装自动清理 v2.0–v2.4 残留；升级保留追踪器绑定 |
+| 4 | 性能档属性持久化残留 | ✅ 非持久写入 + 卸载自动还原 |
+| 5 | 三档切换需卸载重装 | 🔁 **三档可互刷**（同一模块 ID，无需卸载，绑定保留） |
+
+> ⚠️ 从 v2.0 / v2.1 / v2.2 / v2.3 / v2.4 **直接覆盖安装 v2.6 即可**，无需先卸载。
+
+---
+
+## ✨ 解锁内容
 
 | 能力 | 原厂（标准版） | 解锁后 |
 |---|---|---|
-| 体感追踪器 2.0.5 应用 | 提示"设备不支持，请升级系统" | 完整可用 |
-| 追踪器配对数量 | 2 或 3（随穿戴模式固定） | **2 / 3 / 5 个，应用内切换** |
+| 体感追踪器 2.0.5 应用 | 提示"设备不支持，请升级系统" | 完整可用（**原版 APK、原签名、零修改**） |
+| 追踪器设备检测 | — | ✅ 正常列出 / 连接 / 校准 |
 | 特权权限 | 拿不到（签名不符） | priv-app 身份完整授予 |
-| 5 点（5tk_thigh） | Ultra 专属档位 | 系统层已放开（见下方说明） |
+| 追踪器数量 | 2 或 3（随穿戴模式固定） | 2 / 3 / 5，跟随官方应用流程切换 |
+| 5 点（forearm / knee） | Ultra 专属档位 | 系统层已放开（需 5 台追踪器） |
 
 ---
 
-## 📥 安装
+## 📥 安装 / 升级 / 卸载
 
+### 安装
 1. 确认已 root（Magisk 27+）
-2. Magisk → 模块 → 从本地安装 `PICO4_MotionTracker_2.0.5_v2.2.zip`
+2. Magisk → 模块 → 从本地安装对应 ZIP（三档任选）
 3. 重启
-4. 打开「体感追踪器」应用，正常扫描配对 → 佩戴校准 → 开追
+4. 打开「体感追踪器」应用，正常配对/校准
 
-## 🗑️ 卸载
+### 升级（从任意旧版）
+直接安装新 ZIP 覆盖即可（**无需卸载**）；重启后生效，追踪器绑定保留。
 
-Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢复原厂状态。
+### 三档互刷
+Standard / Performance / EXTREME 为同一个模块（不同档位参数），可直接互相覆盖安装、随时切换。
 
----
+### 卸载
+Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢复原厂 2.0.4。
 
-## 🔄 模式切换（2 / 3 / 5 点）
-
-- 应用 **设置页 → 数量上限**：选 3 或 5（选 3/5 时若已绑定数超目标会弹"先解绑"确认框，属原厂保护逻辑）
-- 应用 **穿戴模式页**：切换 2 点（2tk）/ 3 点（3tk_waist）/ 5 点（5tk_thigh），
-  确认时**自动联动配对上限**（2 点→2、3 点→3、5 点→5）
-- 所有切换即时生效，不依赖 PICO 配置服务的写权限
-
-> ⚠️ **注意：手上只有 3 个追踪器，无法实测配对5个。**
-> 系统层证据（MCU `tracker_num=5`、Stationservice 按 5 槽位工作）表明 5 点理论上可行，
-> 但满配 5 台的场景未经真机验证。配第 3 个以上遇到问题时欢迎提 issue 附 logcat。
-
----
-
-## 🧩 原理：为什么需要这么多层
-
-标准版跑不了这个应用，不是一道门，是**五层叠加**：
-
-| # | 层 | 原厂行为 | 本方案处理 |
-|---|---|---|---|
-| 1 | 产品档位门禁 | `ro.pxr.externalfunc=0` → 应用判定"设备不支持" | priv-app overlay + 强制放行检查 |
-| 2 | 特权权限 | 测试签名装 /data 拿不到 `SWIFT_ACCESS` 等 signature\|privileged 权限 | Magisk overlay 到 `/system/priv-app`，按"或"逻辑授予权限 |
-| 3 | Native 兼容 | 2.0.5 的 `libswift.so` 需要 P4 缺失的 `getSwiftTrackerInfoVector` 导出，垃圾数据直通 JNI → `negative array length` 崩溃循环 | 禁用对应 vtable 调用路径 |
-| 4 | 设备枚举 | 枚举接口不可用，设备列表恒为空，无法进入校准 | 改用系统 `statusChangedCallback` 回调缓存设备 |
-| 5 | 模式切换 | PICO 配置服务拒绝应用写入系统键（wear mode 卡在 5 点，limit 卡在 5） | 应用内 override，选择即时生效 |
-
-另有：配对用的 discovery 开关被应用的电源/前台可见性检查 ignore，已强制开启
-（这正是"点了扫描没反应"的直接原因）。
-
-完整的逆向过程、smali 改动清单、ARM64 二进制补丁细节和崩溃链分析见
-[FIX_NOTES.md](FIX_NOTES.md)（包括那条 `negative array length: -954437177` 的完整解剖）。
-
----
-
-## 🆚 与旧方案（LSPosed / Zygisk hook）的对比
-
-本仓库最初是 LSPosed hook 方案（已在 v2.0 移除），差异：
-
-| | LSPosed hook（旧） | Magisk priv-app overlay（新） |
+| 档位 | 说明 | 下载 |
 |---|---|---|
-| 思路 | 运行时 hook 拦截检查 | 直接替换应用 + 二进制补丁 |
-| 崩溃风险 | 高（handleLoadPackage 阶段触发 ClassLoader 重入 → 崩溃循环；扫描阶段还有 hook 不到的方法体内硬编码） | 无 hook，改动随 APK 固化 |
-| 权限 | 仍拿不到 priv-app 特权 | ✅ 完整授予 |
-| native 层 | 无法覆盖（Xposed hook 不了 native） | ✅ 直接补丁 |
-| 依赖 | 需要 Zygisk Vector 框架 | 仅 Magisk |
-| 维护 | 每次 hook 点偏移变化都要改代码 | OTA 后重刷模块即可 |
+| ⭐ Standard | 推荐日常使用 | [`PICO4_MotionTracker_v2.6_standard.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_standard.zip) |
+| 🚀 Performance | CPU 性能调度 | [`PICO4_MotionTracker_v2.6_performance.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_performance.zip) |
+| 🔥 EXTREME | 极限性能（高功耗高发热） | [`PICO4_MotionTracker_v2.6_extreme.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_extreme.zip) |
+
+---
+
+## 🔧 原理（v2.6）
+
+标准版跑不了 2.0.5 是"多层限制叠加"，v2.6 用最稳的方式逐层解决：
+
+| # | 层 | 说明 |
+|---|---|---|
+| 1 | 门禁绕过 | priv-app overlay：把**原版 2.0.5 APK** 放入 `/system/priv-app`（原签名、零修改），绕过 `ro.pxr.externalfunc` 门禁 |
+| 2 | 特权权限 | 以系统应用身份运行，`SWIFT_ACCESS` 等特权权限完整授予 |
+| 3 | **native 兼容层** | 2.0.5 需要 P4 固件缺失的 `getSwiftTrackerInfoVector` 符号——通过补丁系统追踪库（仅加一条依赖）+ 转发小库补齐，设备检测恢复正常 |
+| 4 | **版本切换生命周期** | 自动失效 PMS 解析缓存（安装方向 + 卸载方向双向），保证版本号、资源加载、应用启动全部正确 |
+| 5 | 属性卫生 | 性能档属性非持久化写入；卸载自动还原 |
+
+> 完整技术细节（二进制补丁、缓存机制、构建方式、踩坑记录）见 [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md)；
+> v2.0–v2.3 的历史逆向记录见 [FIX_NOTES.md](FIX_NOTES.md)。
+
+---
+
+## ✅ 已验证（真机）
+
+- PICO 4 A8110 / PUI 5.13.7 / Magisk，3 台体感追踪器
+- **v2.4 → v2.6 覆盖升级**：版本号自动刷新、应用正常打开、3 台追踪器全部检测到
+- **v2.6 卸载**：版本自动回落 2.0.4、原版应用正常、缓存/属性/模块零残留
+- **三档互刷**：Standard ⇄ Performance ⇄ EXTREME 双向验证通过
+- 追踪器固件 sv1.89 / sv1.91 均已验证可用（固件工具见下方"相关项目"）
 
 ---
 
 ## ❓ 常见问题
 
-**Q：点了扫描设备没反应？**
-确认应用版本是 2.0.5 且模块已安装重启。v2.0 已强制开启 discovery，
-如仍有问题抓 logcat 过滤 `SwiftRepo|TrackingClient` 提 issue。
+**Q：追踪器列表为空 / 搜不到设备？**
+v2.6 已修复此问题。若仍出现，请附 `adb logcat | grep -E "Swift205Shim|devices:"` 输出提 issue。
 
-**Q：配对成功后追踪器几秒就断链？**
-日志显示 `reason: tracker_power_off` 且 HMD 侧设置全部正确时，
-是追踪器自身固件问题（多见于对在线状态的追踪器执行过解绑）。
-**放回充电座充电几分钟或恢复出厂设置**后重新配对即可。
+**Q：升级后应用里版本号不对 / 打不开？**
+v2.6 起自动处理（每次开机自愈）。
 
-**Q：5 点能用吗？**
-软件门已全开。但 5 点需要 5 台追踪器——手上只有 3 台，无法实测配对5个。
+**Q：旧版（≤v2.3 修改版 APK）在应用商店弹签名错误？**
+v2.4 起改用**原版 APK**，不再有测试签名问题。直接覆盖安装 v2.6 即可。
 
-**Q：系统 OTA 后失效了？**
-正常，Magisk overlay 在 OTA 后需要重刷模块 zip 再重启。
+**Q：一代追踪器（DK / 1.0 代）能用吗？**
+本项目面向 2.0 代追踪器。使用一代设备请到：设置 → 追踪器版本 → 切 1.0。
 
----
+**Q：系统 OTA 后失效？**
+正常现象，重刷本模块 zip 并重启即可。
 
-## 📦 校验（v2.0）
+**Q：5 点模式？**
+需要 5 台追踪器；当前仅 3 台，未做满配真机实测（系统层证据显示槽位支持 5 个）。
 
-```
-MD5:    c847c9137147a4a8e8d8975bfb11ab7b
-SHA256: f89449301fecae7627c022022c0741e198291927179709b4a98f5d2fec9093fa
-```
-
-## 📄 文档
-
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.0 版本说明
-- [FIX_NOTES.md](FIX_NOTES.md) — 完整逆向与踩坑记录
-
-仅供学习研究，请支持正版。
+**Q：能降级回旧版模块吗？**
+可以，直接安装任意历史版本 zip 即可（v2.6 会自动处理缓存）。
 
 ---
 
-## ❓ 更多常见问题
-**Q：应用一直显示"连接 DK 追踪器"/等待 DK？**
-DK（Developer Kit）是 2.0 追踪器的产品名，2.0.5 应用默认运行在 2.0 模式。
-如果你用的是**一代 PICO Motion Tracker**（蓝牙配对那种），请到
-设置 → 追踪器版本 → 切到 **1.0**（切换前先解绑所有已配对追踪器）。
+## 📄 文档与版本历史
 
-**Q：切换 2.0 失败（提示"切换失败"）？**
-先在应用里解绑所有已配对追踪器再切。仍失败的话，root 下执行
-`adb shell setprop persist.pxr.tracking.swiftVersion 2` 后重启应用再试，
-并把 `getprop persist.pxr.tracking.swiftVersion` 和 `ro.pxr.support.swiftversion`
-的结果连同 logcat 提 issue。
+- [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 版本说明
+- [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md) — v2.4–v2.6 完整技术记录
+- [FIX_NOTES.md](FIX_NOTES.md) — v2.0–v2.3 逆向与踩坑记录（历史）
+- [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.3 版本说明（历史）
 
-**Q：PICO 商店弹窗"Verification failed: illegal signature"并要求购买？**
-正常现象——修改版 APK 使用测试签名，不是商店签名。点取消忽略即可。
-**不要**购买/恢复商店版本，那会覆盖掉解锁。
+## 🔗 相关项目
+
+- **[pico4-tracker-firmware](https://github.com/hhhbwc/pico4-tracker-firmware)** — PICO 体感追踪器固件升级/降级工具（独立项目）
+
+---
+
+仅供学习研究，请支持正版。本项目为社区项目，与 PICO 官方无关。
