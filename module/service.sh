@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# v2.6 boot worker (stock only + compat fix)
+# v2.7 boot worker (stock only, single build)
 # 不切换算法、不挂载库、不重启追踪服务
 
 MOD=/data/adb/modules/pico4_swift_force_enable
@@ -14,7 +14,7 @@ rm -f "$BOOT_DONE"
 : > "$BOOT_STATUS"
 chmod 644 "$BOOT_STATUS"
 
-# v2.6 兼容层自检
+# v2.7 兼容层自检
 if [ -f /system/lib64/libswift205shim.so ]; then
   echo "compat: libswift205shim present" >> "$BOOT_STATUS"
 else

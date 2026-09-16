@@ -1,5 +1,5 @@
 #!/system/bin/sh
-# PICO 4 Motion Tracker Unlock - uninstall cleanup (v2.6)
+# PICO 4 Motion Tracker Unlock - uninstall cleanup (v2.7)
 # 1) 使 PMS 解析缓存失效 -> 下次启动重新解析并恢复系统原版应用 (2.0.4)
 # 2) 恢复被旧版性能包持久化写入的系统属性（best-effort，仅在值确实被改过时写回）
 # 3) 保留 /data/adb/pico4_tracker（记忆此前安装，避免重装时重复解绑）
@@ -18,6 +18,7 @@ mkdir -p /data/adb/service.d
 cat > /data/adb/service.d/pico4_prop_cleanup.sh << 'EOS'
 #!/system/bin/sh
 v=$(getprop persist.pvr.performance_mode); [ -n "$v" ] && setprop persist.pvr.performance_mode ""
+v=$(getprop af.fast_track_multiplier); [ -n "$v" ] && setprop af.fast_track_multiplier ""
 v=$(getprop persist.psensor.screenoff.delay); [ "$v" != "10" ] && setprop persist.psensor.screenoff.delay 10
 v=$(getprop persist.psensor.sleep.delay); [ "$v" != "15" ] && setprop persist.psensor.sleep.delay 15
 rm -f /data/adb/service.d/pico4_prop_cleanup.sh

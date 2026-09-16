@@ -5,12 +5,24 @@
 Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, ROM 5.13.x).
 The app is enabled via a **Magisk module**: **tracker detection works, and install / upgrade / uninstall are fully reliable**. Zero system partition modifications — uninstall restores stock.
 
-> 📦 Download: [Releases](../../releases) → **v2.6** (Standard / Performance / EXTREME)
+> 📦 Download: [Releases](../../releases) → **v2.7** (single build: stock scheduling)
 > 🔧 Requirements: Magisk 27+, PICO 4 standard edition (or other 4-series devices behind the same gates)
 
 ---
 
-## 🆕 What v2.6 fixes
+## 🆕 v2.7: single build + tuning migration
+
+| Change | Details |
+|---|---|
+| 🔀 **3 flavors → 1 build** | Only one build remains (stock scheduling). Flashing over the old Performance / EXTREME flavors **automatically restores** the stock-scheduling properties |
+| 🎛️ **Performance tuning moved out** | The CPU/GPU scheduling tuning now lives in **[pico4-power-mode](https://github.com/hhhbwc/pico4-power-mode)**: its Magisk companion applies it while Performance Mode is active, and restores stock otherwise |
+| 🧹 **Clean upgrades** | Legacy tuning properties are cleaned up on upgrade (immediately + boot-time fallback) |
+
+> Why single build? Maintaining three builds had no purpose — the unlock is independent of scheduling, and tuning is now consolidated in one place (power-mode).
+
+---
+
+## 🆕 What v2.6 fixes (reliability foundation)
 
 | # | Old issue | v2.6 fix |
 |---|---|---|
@@ -18,9 +30,9 @@ The app is enabled via a **Magisk module**: **tracker detection works, and insta
 | 2 | Version number not updated after upgrade / stuck after uninstall / app won't open after switching | ✅ **Automatic PackageManager parse-cache handling** in both directions (self-healing on boot) |
 | 3 | Leftovers when upgrading from old versions | ✅ Auto-cleanup of v2.0–v2.4 residue; tracker bonds preserved |
 | 4 | Persistent properties left by performance flavors | ✅ Non-persistent writes + auto-restore on uninstall |
-| 5 | Switching flavors required uninstall | 🔁 **Cross-flashable flavors** (same module ID, no uninstall, bonds kept) |
+| 5 | Switching flavors required uninstall | 🔁 Flavors were cross-flashable; **merged into one build since v2.7** |
 
-> ⚠️ Upgrading from v2.0–v2.4: just install v2.6 over it — no uninstall needed.
+> ⚠️ Upgrading from v2.0–v2.6 (incl. Performance/EXTREME): just install v2.7 over it — no uninstall needed.
 
 ---
 
@@ -40,28 +52,23 @@ The app is enabled via a **Magisk module**: **tracker detection works, and insta
 
 ### Install
 1. Make sure you're rooted (Magisk 27+)
-2. Magisk → Modules → Install from storage → pick a flavor ZIP
+2. Magisk → Modules → Install from storage → pick the ZIP
 3. Reboot
 4. Open the "Motion Tracker" app
 
-### Upgrade (from any old version)
-Just flash the new ZIP over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept.
-
-### Cross-flashing flavors
-Standard / Performance / EXTREME are the same module (different tuning) — flash any other ZIP at any time.
+### Upgrade (from any old version, incl. old Performance/EXTREME)
+Just flash v2.7 over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept, legacy tuning properties are restored.
 
 ### Uninstall
 Remove the module in Magisk → reboot. The system partition was never touched; stock 2.0.4 is restored automatically.
 
-| Flavor | Notes | Download |
+| Build | Notes | Download |
 |---|---|---|
-| ⭐ Standard | Recommended daily | [`PICO4_MotionTracker_v2.6_standard.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_standard.zip) |
-| 🚀 Performance | CPU performance tuning | [`PICO4_MotionTracker_v2.6_performance.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_performance.zip) |
-| 🔥 EXTREME | Max performance (high power) | [`PICO4_MotionTracker_v2.6_extreme.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_extreme.zip) |
+| ✅ **v2.7 (only build)** | Stock scheduling; pair with pico4-power-mode for tuning | [`PICO4_MotionTracker_v2.7.zip`](../../releases/download/v2.7/PICO4_MotionTracker_v2.7.zip) |
 
 ---
 
-## 🔧 How it works (v2.6)
+## 🔧 How it works
 
 | # | Layer | Details |
 |---|---|---|
@@ -69,7 +76,7 @@ Remove the module in Magisk → reboot. The system partition was never touched; 
 | 2 | Privileges | Runs as a system app — privileged permissions fully granted |
 | 3 | **Native compat layer** | 2.0.5 needs `getSwiftTrackerInfoVector`, missing from P4 firmware — fixed by patching the system tracking lib (one extra dependency) + a tiny forwarding shim |
 | 4 | **Version-switch lifecycle** | Automatically invalidates the PackageManager parse cache (both install and uninstall directions) |
-| 5 | Property hygiene | Performance properties written non-persistently; restored on uninstall |
+| 5 | Property hygiene | Non-persistent writes; restored on uninstall; since v2.7 also restored on flavor upgrades |
 
 > Full technical notes: [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md). History (v2.0–v2.3): [FIX_NOTES.md](FIX_NOTES.md).
 
@@ -79,8 +86,8 @@ Remove the module in Magisk → reboot. The system partition was never touched; 
 
 - PICO 4 A8110 / PUI 5.13.7 / Magisk, 3 Motion Trackers
 - **v2.4 → v2.6 upgrade**: version auto-updated, app opens, all 3 trackers detected
-- **v2.6 uninstall**: version falls back to 2.0.4, stock app works, zero residue
-- **Cross-flash**: Standard ⇄ Performance ⇄ EXTREME verified both ways
+- **v2.6 → v2.7 upgrade** (2026-09-16): single build active, legacy properties cleared, bonds kept
+- **Uninstall**: version falls back to 2.0.4, stock app works, zero residue
 - Tracker firmware sv1.89 / sv1.91 both verified working
 
 ---
@@ -90,14 +97,14 @@ Remove the module in Magisk → reboot. The system partition was never touched; 
 **Q: Tracker list is empty?**
 Fixed in v2.6. If it still happens, open an issue with `adb logcat | grep -E "Swift205Shim|devices:"`.
 
+**Q: Where did the CPU/GPU performance tuning go?**
+Moved to [pico4-power-mode](https://github.com/hhhbwc/pico4-power-mode). It auto-applies while Performance Mode is on and restores stock when off.
+
+**Q: Can I still flash the old Performance/EXTREME zips?**
+Old releases remain (v2.6) but are no longer maintained; v2.7+ is single-build — use pico4-power-mode for tuning.
+
 **Q: Version number wrong / app won't open after switching?**
 Handled automatically since v2.6 (self-healing on every boot).
-
-**Q: "illegal signature" popup from the store?**
-Since v2.4 the module uses the stock APK — no test-signature issues. Just install v2.6.
-
-**Q: 1st-gen trackers (DK / 1.0)?**
-This project targets 2nd-gen trackers. For gen-1: Settings → Tracker version → 1.0.
 
 **Q: Breaks after system OTA?**
 Expected — re-flash the module ZIP and reboot.
@@ -105,20 +112,18 @@ Expected — re-flash the module ZIP and reboot.
 **Q: 5-point mode?**
 Needs 5 trackers; not fully tested with 5 units (system-level evidence shows 5 slots supported).
 
-**Q: Can I downgrade to an older module version?**
-Yes — flash any older ZIP (v2.6 handles the cache automatically).
-
 ---
 
 ## 📄 Docs & version history
 
-- [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 release notes
+- [RELEASE_NOTES_v2.7.md](RELEASE_NOTES_v2.7.md) — v2.7 release notes
+- [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 release notes (historical)
 - [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md) — full v2.4–v2.6 technical notes
 - [FIX_NOTES.md](FIX_NOTES.md) — v2.0–v2.3 reverse-engineering log (historical)
-- [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.3 release notes (historical)
 
 ## 🔗 Related projects
 
+- **[pico4-power-mode](https://github.com/hhhbwc/pico4-power-mode)** — Performance Mode unlock + CPU/GPU scheduling tuning (the new home of the tuning)
 - **[pico4-tracker-firmware](https://github.com/hhhbwc/pico4-tracker-firmware)** — PICO Motion Tracker firmware update/downgrade toolkit
 
 ---

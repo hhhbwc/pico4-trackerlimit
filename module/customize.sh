@@ -1,6 +1,7 @@
 #!/system/bin/sh
-# PICO 4 Motion Tracker Unlock - install script (v2.6)
-# 覆盖安装 v2.0-v2.6：自动清理旧版本残留（ultra 算法套件、旧挂载点、旧模块目录残留文件）。
+# PICO 4 Motion Tracker Unlock - install script (v2.7)
+# 覆盖安装 v2.0-v2.7：自动清理旧版本残留（ultra 算法套件、旧挂载点、旧模块目录残留文件）
+# + 还原旧性能档（v2.6 performance/extreme）写过的属性（单档=原厂调度）。
 # 注意：不要删除 modules_update 目录（Magisk 在其内部执行 customize.sh，删除会导致升级静默失败）。
 
 MODDIR=$(dirname "$0")
@@ -8,7 +9,7 @@ INSTALL_LOG="/sdcard/pico4_install_$(date +%s).log"
 exec 2>&1 | tee "$INSTALL_LOG"
 set -x
 
-echo "=== Pico4 Tracker Unlock v2.6 install log ==="
+echo "=== Pico4 Tracker Unlock v2.7 install log ==="
 echo "Time: $(date)"
 echo "MODPATH=$MODPATH"
 echo "MODDIR=$MODDIR"
@@ -22,7 +23,7 @@ UNBOND_RESULT=$RUNDIR/unbond_last_result
 APKNAME=PvrSwift.apk
 OLD_MOD=/data/adb/modules/$MODID
 
-echo "[swift_force_enable] v2.6 install start"
+echo "[swift_force_enable] v2.7 install start"
 
 # ------------------------------------------------------------------
 # 1. 清理 v2.0-v2.3 旧版残留：
@@ -36,6 +37,23 @@ if [ -d "$OLD_MOD" ]; then
   rm -rf "$OLD_MOD/system/etc/AlgSwift"
   rm -rf "$OLD_MOD/ultra"
 fi
+
+# ------------------------------------------------------------------
+# 1b. v2.7 单档：还原旧性能档写过的属性（立即 best-effort + 下次开机兜底执行）
+#     仅处理已知会被旧 performance/extreme 档改写的属性。
+# ------------------------------------------------------------------
+resetprop -d persist.pvr.performance_mode 2>/dev/null || true
+v=$(getprop persist.pvr.performance_mode); [ -n "$v" ] && setprop persist.pvr.performance_mode "" 2>/dev/null || true
+mkdir -p /data/adb/service.d
+cat > /data/adb/service.d/pico4_v27_prop_cleanup.sh << 'EOS'
+#!/system/bin/sh
+v=$(getprop persist.pvr.performance_mode); [ -n "$v" ] && setprop persist.pvr.performance_mode ""
+v=$(getprop af.fast_track_multiplier); [ -n "$v" ] && setprop af.fast_track_multiplier ""
+v=$(getprop persist.psensor.screenoff.delay); [ "$v" = "60" ] && setprop persist.psensor.screenoff.delay 10
+v=$(getprop persist.psensor.sleep.delay); [ "$v" = "60" ] && setprop persist.psensor.sleep.delay 15
+rm -f /data/adb/service.d/pico4_v27_prop_cleanup.sh
+EOS
+chmod 755 /data/adb/service.d/pico4_v27_prop_cleanup.sh
 
 # ------------------------------------------------------------------
 # 2. 备份原版 APK（仅首次）

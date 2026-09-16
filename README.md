@@ -6,8 +6,20 @@
 通过 **Magisk 模块** 在标准版上完整启用「体感追踪器 2.0.5」应用：
 **追踪器检测正常、版本切换/升级/卸载全链路可靠**。系统分区零修改，卸载即恢复原版。
 
-> 📦 下载：[Releases](../../releases) → **v2.6**（Standard / Performance / EXTREME 三档）
+> 📦 下载：[Releases](../../releases) → **v2.7**（单档版：原厂调度）
 > 🔧 要求：Magisk 27+，PICO 4 标准版（或受相同门禁限制的 4 系列设备）
+
+---
+
+## 🆕 v2.7：单档化（原厂调度）+ 性能调优迁移
+
+| 变化 | 说明 |
+|---|---|
+| 🔀 **三档 → 单档** | 只保留一个构建（原厂调度）。从旧 Performance / EXTREME 档覆盖安装时，**自动还原**被改写过的系统属性，回到原厂调度 |
+| 🎛️ **性能调优迁移** | 原性能/极限档的 CPU/GPU 调度调优迁移至 **[pico4-power-mode](https://github.com/hhhbwc/pico4-power-mode)** 项目：由其 Magisk 伴生组件在「性能模式」生效时自动应用（CPU/GPU governor → `performance` 等），其他档位恢复原厂 |
+| 🧹 **升级即清理** | 覆盖安装自动清理旧档位残留属性（best-effort 即时 + 下次开机兜底） |
+
+> 为什么单档化？维护三条构建没有意义；解锁本身与调度无关，调优统一收敛到 power-mode 一个入口。
 
 ---
 
@@ -19,9 +31,9 @@
 | 2 | 升级后版本号不变 / 卸载后回不去 / 切换版本后打不开应用 | ✅ **PMS 解析缓存双向自动处理**（开机自愈，无需手动干预） |
 | 3 | 旧版升级链路残留、升级后行为不一致 | ✅ 覆盖安装自动清理 v2.0–v2.4 残留；升级保留追踪器绑定 |
 | 4 | 性能档属性持久化残留 | ✅ 非持久写入 + 卸载自动还原 |
-| 5 | 三档切换需卸载重装 | 🔁 **三档可互刷**（同一模块 ID，无需卸载，绑定保留） |
+| 5 | 切换档位需卸载重装 | 🔁 旧版本三档曾可互刷；**v2.7 起合并为单档** |
 
-> ⚠️ 从 v2.0 / v2.1 / v2.2 / v2.3 / v2.4 **直接覆盖安装 v2.6 即可**，无需先卸载。
+> ⚠️ 从 v2.0 / v2.1 / v2.2 / v2.3 / v2.4 / v2.6 **直接覆盖安装 v2.7 即可**，无需先卸载。
 
 ---
 
@@ -41,30 +53,25 @@
 
 ### 安装
 1. 确认已 root（Magisk 27+）
-2. Magisk → 模块 → 从本地安装对应 ZIP（三档任选）
+2. Magisk → 模块 → 从本地安装 ZIP
 3. 重启
 4. 打开「体感追踪器」应用，正常配对/校准
 
-### 升级（从任意旧版）
-直接安装新 ZIP 覆盖即可（**无需卸载**）；重启后生效，追踪器绑定保留。
-
-### 三档互刷
-Standard / Performance / EXTREME 为同一个模块（不同档位参数），可直接互相覆盖安装、随时切换。
+### 升级（从任意旧版，含旧性能/极限档）
+直接安装 v2.7 ZIP 覆盖即可（**无需卸载**）；重启后生效，追踪器绑定保留，旧档调优属性自动还原。
 
 ### 卸载
 Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢复原厂 2.0.4。
 
-| 档位 | 说明 | 下载 |
+| 构建 | 说明 | 下载 |
 |---|---|---|
-| ⭐ Standard | 推荐日常使用 | [`PICO4_MotionTracker_v2.6_standard.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_standard.zip) |
-| 🚀 Performance | CPU 性能调度 | [`PICO4_MotionTracker_v2.6_performance.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_performance.zip) |
-| 🔥 EXTREME | 极限性能（高功耗高发热） | [`PICO4_MotionTracker_v2.6_extreme.zip`](../../releases/download/v2.6/PICO4_MotionTracker_v2.6_extreme.zip) |
+| ✅ **v2.7（唯一构建）** | 原厂调度；性能调优请配合 pico4-power-mode | [`PICO4_MotionTracker_v2.7.zip`](../../releases/download/v2.7/PICO4_MotionTracker_v2.7.zip) |
 
 ---
 
-## 🔧 原理（v2.6）
+## 🔧 原理
 
-标准版跑不了 2.0.5 是"多层限制叠加"，v2.6 用最稳的方式逐层解决：
+标准版跑不了 2.0.5 是"多层限制叠加"，逐层解决：
 
 | # | 层 | 说明 |
 |---|---|---|
@@ -72,7 +79,7 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 | 2 | 特权权限 | 以系统应用身份运行，`SWIFT_ACCESS` 等特权权限完整授予 |
 | 3 | **native 兼容层** | 2.0.5 需要 P4 固件缺失的 `getSwiftTrackerInfoVector` 符号——通过补丁系统追踪库（仅加一条依赖）+ 转发小库补齐，设备检测恢复正常 |
 | 4 | **版本切换生命周期** | 自动失效 PMS 解析缓存（安装方向 + 卸载方向双向），保证版本号、资源加载、应用启动全部正确 |
-| 5 | 属性卫生 | 性能档属性非持久化写入；卸载自动还原 |
+| 5 | 属性卫生 | 性能属性非持久化写入；卸载自动还原；v2.7 起升级时同样自动还原旧档属性 |
 
 > 完整技术细节（二进制补丁、缓存机制、构建方式、踩坑记录）见 [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md)；
 > v2.0–v2.3 的历史逆向记录见 [FIX_NOTES.md](FIX_NOTES.md)。
@@ -83,8 +90,8 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 
 - PICO 4 A8110 / PUI 5.13.7 / Magisk，3 台体感追踪器
 - **v2.4 → v2.6 覆盖升级**：版本号自动刷新、应用正常打开、3 台追踪器全部检测到
-- **v2.6 卸载**：版本自动回落 2.0.4、原版应用正常、缓存/属性/模块零残留
-- **三档互刷**：Standard ⇄ Performance ⇄ EXTREME 双向验证通过
+- **v2.6 → v2.7 覆盖升级**（2026-09-16）：单档生效、旧属性清零、绑定保留
+- **卸载**：版本自动回落 2.0.4、原版应用正常、缓存/属性/模块零残留
 - 追踪器固件 sv1.89 / sv1.91 均已验证可用（固件工具见下方"相关项目"）
 
 ---
@@ -97,8 +104,11 @@ v2.6 已修复此问题。若仍出现，请附 `adb logcat | grep -E "Swift205S
 **Q：升级后应用里版本号不对 / 打不开？**
 v2.6 起自动处理（每次开机自愈）。
 
-**Q：旧版（≤v2.3 修改版 APK）在应用商店弹签名错误？**
-v2.4 起改用**原版 APK**，不再有测试签名问题。直接覆盖安装 v2.6 即可。
+**Q：性能调优（CPU/GPU 调度）去哪了？**
+迁移到了 [pico4-power-mode](https://github.com/hhhbwc/pico4-power-mode)。开启「性能模式」时由其伴生模块自动应用，关闭时恢复原厂。
+
+**Q：还能刷旧版性能/极限档吗？**
+历史 Release 仍在（v2.6），但不再维护；v2.7 起单档化，旧的调优请用 pico4-power-mode。
 
 **Q：一代追踪器（DK / 1.0 代）能用吗？**
 本项目面向 2.0 代追踪器。使用一代设备请到：设置 → 追踪器版本 → 切 1.0。
@@ -109,21 +119,20 @@ v2.4 起改用**原版 APK**，不再有测试签名问题。直接覆盖安装 
 **Q：5 点模式？**
 需要 5 台追踪器；当前仅 3 台，未做满配真机实测（系统层证据显示槽位支持 5 个）。
 
-**Q：能降级回旧版模块吗？**
-可以，直接安装任意历史版本 zip 即可（v2.6 会自动处理缓存）。
-
 ---
 
 ## 📄 文档与版本历史
 
-- [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 版本说明
+- [RELEASE_NOTES_v2.7.md](RELEASE_NOTES_v2.7.md) — v2.7 版本说明
+- [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 版本说明（历史）
 - [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md) — v2.4–v2.6 完整技术记录
 - [FIX_NOTES.md](FIX_NOTES.md) — v2.0–v2.3 逆向与踩坑记录（历史）
 - [RELEASE_NOTES.md](RELEASE_NOTES.md) — v2.3 版本说明（历史）
 
 ## 🔗 相关项目
 
-- **[pico4-tracker-firmware](https://github.com/hhhbwc/pico4-tracker-firmware)** — PICO 体感追踪器固件升级/降级工具（独立项目）
+- **[pico4-power-mode](https://github.com/hhhbwc/pico4-power-mode)** — 性能模式解锁 + CPU/GPU 调度调优（v2.7 起性能调优的新家）
+- **[pico4-tracker-firmware](https://github.com/hhhbwc/pico4-tracker-firmware)** — PICO 体感追踪器固件升级/降级工具
 
 ---
 

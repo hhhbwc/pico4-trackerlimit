@@ -1,46 +1,64 @@
-# module/ — v2.6 模块源码
+# PICO 4 Motion Tracker Unlock (2.0.5) v2.7 — Magisk Module
 
-本目录为 **v2.6 模块的源码镜像**（与 Releases 中 `PICO4_MotionTracker_v2.6_*.zip` 内文件一致；
-不含 `system/priv-app/PvrSwift/PvrSwift.apk` 载荷——APK 为 Pico 原版文件，请从 Release ZIP 获取）。
+Enable the PICO Motion Tracker **2.0.5** app on the **PICO 4 (standard)** / PUI 5.13.x.
+Tracker detection works; install / upgrade / uninstall are reliable.
+No system partition changes — uninstall restores stock.
 
-## 结构
+> **v2.7 = single build.** Only the stock-scheduling build remains.
+> CPU/GPU performance tuning was moved to the **pico4-power-mode** project
+> (its Magisk companion applies the tuning when Performance Mode is active).
+> Upgrading from old Performance/EXTREME flavors auto-restores stock properties.
 
-```
-module.prop            模块元数据（version=v2.6 / versionCode=11）
-customize.sh           安装脚本（备份、旧版残留清理、解析缓存清理、状态）
-post-fs-data.sh        开机早段：清理 PMS 解析缓存（版本切换自愈的关键）
-service.sh             开机后段：兼容层自检
-toggle.sh              安装期辅助脚本（消费首次安装的解绑标记）
-action.sh              Magisk「执行」按钮文案
-uninstall.sh           卸载清理（缓存失效 + 属性还原）
-system/lib64/
-  libswift205shim.so         native 兼容层（转发库，本仓库源码见 native/）
-  libtrackingclient.pxr.so   补丁版系统库（仅 +1 条 DT_NEEDED 依赖）
-native/
-  libswift205shim.c          转发库源码
-```
+> 🇬🇧 English (below) · 🇷🇺 Русский (ниже) · 🇨🇳 中文（在最下方）
 
-## 工作原理
+---
 
-见仓库根目录 [FIX_NOTES_v2.6.md](../FIX_NOTES_v2.6.md)：
+## English
 
-1. priv-app overlay 原版 2.0.5 APK（原签名、零修改）绕过 `ro.pxr.externalfunc` 门禁；
-2. native 兼容层补齐 P4 缺失的 `getSwiftTrackerInfoVector` 符号（转发到旧接口）；
-3. PMS 解析缓存双向自动处理，保证升级/卸载闭环（版本号、资源、启动全部正确）。
+- **What it is**: enables the *stock* 2.0.5 app via a Magisk module (priv-app overlay).
+  Includes a native compat layer that fixes tracker detection, and a self-healing
+  version-switch lifecycle (PackageManager cache handled automatically on
+  install / upgrade / uninstall).
+- **Single build**: stock scheduling only. No CPU/GPU tuning in this module
+  (by design — that lives in pico4-power-mode now).
+- **Install**: Magisk → Modules → Install from storage → pick the ZIP → reboot →
+  open the "Motion Tracker" app.
+- **Upgrade**: flash over any old version (v2.0–v2.6, incl. Performance/EXTREME
+  flavors). No uninstall needed; tracker bonds kept; leftover tuning properties
+  are restored to stock automatically.
+- **Uninstall**: remove the module in Magisk → reboot → stock 2.0.4 restored.
+- **Notes**: the app itself is stock and multi-language (follows your headset
+  system language). Full technical notes: see `FIX_NOTES_v2.6.md` on GitHub.
+- For learning & research only.
 
-## 构建
+## Русский
 
-```bash
-# 转发库（aarch64）
-aarch64-linux-gnu-gcc -shared -nostdlib -fPIC -O2 -ffreestanding -fno-builtin \
-    -fno-stack-protector -fno-asynchronous-unwind-tables \
-    -Wl,-soname,libswift205shim.so -o system/lib64/libswift205shim.so native/libswift205shim.c
+- **Что это**: включает *штатное* приложение 2.0.5 через Magisk-модуль
+  (priv-app overlay). Исправлено обнаружение трекеров и цикл
+  обновления/удаления (кэш PackageManager обрабатывается автоматически).
+- **Единая сборка**: только стоковый режим планирования. Настройки CPU/GPU
+  перенесены в проект **pico4-power-mode**.
+- **Установка**: Magisk → Модули → Установить из файла → ZIP → перезагрузка →
+  открыть приложение «Motion Tracker».
+- **Обновление**: прошить поверх любой старой версии (v2.0–v2.6, включая
+  Performance/EXTREME) — привязки сохраняются, остатки настроек сбрасываются.
+- **Удаление**: удалить модуль в Magisk → перезагрузка — возвращается стоковая 2.0.4.
+- Только для обучения и исследований.
 
-# 系统库补丁
-patchelf --add-needed libswift205shim.so libtrackingclient.pxr.so
-```
+## 中文
 
-打包：将本目录内容放入 Magisk 模块 zip 根（并把 `PvrSwift.apk` 放入
-`system/priv-app/PvrSwift/PvrSwift.apk`），安装脚本会自动处理其余事项。
+本模块用于在 PICO 4 标准版（PUI 5.13.x）上完整启用「体感追踪器 2.0.5」应用：
 
-仅供学习研究，请支持正版。
+- **原版 APK**（零修改、原签名）+ **native 兼容层**修复追踪器检测；
+- 版本切换/升级/卸载全链路自动修复（PMS 解析缓存双向处理）；
+- **v2.7 起单档版**：仅保留原厂调度（不做性能调优）；
+  性能调优已迁移至 **pico4-power-mode** 项目（由其 Magisk 伴生组件在性能模式下应用）；
+- 从旧性能档（Performance/EXTREME）升级时，自动还原被改写过的系统属性；
+- 安装：Magisk → 模块 → 从本地安装 → 重启 → 打开「体感追踪器」；
+- 卸载：Magisk 移除模块 → 重启，自动恢复原版 2.0.4。
+- 应用自带多语言（跟随头显系统语言）。
+- 详细技术记录见 GitHub 仓库 `FIX_NOTES_v2.6.md`。仅供学习研究。
+
+---
+
+*Module version v2.7 · versionCode 12 · Magisk required.*
