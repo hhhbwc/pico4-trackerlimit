@@ -5,8 +5,21 @@
 Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, ROM 5.13.x).
 The app is enabled via a **Magisk module**: **tracker detection works, and install / upgrade / uninstall are fully reliable**. Zero system partition modifications — uninstall restores stock.
 
-> 📦 Download: [Releases](../../releases) → **v2.7** (single build: stock scheduling)
+> 📦 Download: [Releases](../../releases) → **v2.8** (fixed build: library isolation, 0 crashes)
 > 🔧 Requirements: Magisk 27+, PICO 4 standard edition (or other 4-series devices behind the same gates)
+
+---
+
+## 🛑 v2.7 users: upgrade to v2.8 ASAP (black screen risk)
+
+**v2.7 has a critical flaw**: the native compat libraries are mounted at the global path `/system/lib64/`.
+**Every** process that loads trackingclient — including `com.pico.xr.openxr_runtime` — gets the shim pulled in,
+causing an OpenXR SIGBUS crash loop → tombstones pile up (447 measured) → system_server crashes → **black screen** (forced reboot only).
+
+**v2.8 fix**: the libraries now live in `/system/priv-app/PvrSwift/lib/arm64/` (priv-app private nativeLibraryDir).
+Only the tracker app sees them; the OpenXR runtime keeps using the stock system library.
+Verified on device: **0 tombstones, 3 trackers enumerated, app opens normally**.
+Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the unmodified, PICO-signed original, and auto-unbond has been removed (manual commands in the FAQ).
 
 ---
 

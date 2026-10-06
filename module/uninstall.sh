@@ -25,5 +25,9 @@ rm -f /data/adb/service.d/pico4_prop_cleanup.sh
 EOS
 chmod 755 /data/adb/service.d/pico4_prop_cleanup.sh
 
+# v2.8: 卸载后清理模块预置进 priv-app 私有目录的兼容库。
+# PMS 下次扫描会从（已恢复原版的）APK 重新解压 lib/，这里先行清除避免残留。
+rm -rf /system/priv-app/PvrSwift/lib 2>/dev/null
+
 echo "PICO 4 Motion Tracker Unlock removed - stock app restored on next boot."
 exit 0

@@ -1,7 +1,10 @@
-# PICO 4 Motion Tracker Unlock (2.0.5) v2.7 — Magisk Module
+# PICO 4 Motion Tracker Unlock (2.0.5) v2.8 — Magisk Module
 
 Enable the PICO Motion Tracker **2.0.5** app on the **PICO 4 (standard)** / PUI 5.13.x.
-Tracker detection works; install / upgrade / uninstall are reliable.
+v2.8: compat libs live in the priv-app private lib dir (fixes the v2.7
+openxr_runtime crash-loop / black screen). Tracker detection works;
+install / upgrade / uninstall are reliable. Stock PICO-signed APK only;
+no auto-unbond; single build, stock scheduling (tuning -> pico4-power-mode).
 No system partition changes — uninstall restores stock.
 
 > **v2.7 = single build.** Only the stock-scheduling build remains.

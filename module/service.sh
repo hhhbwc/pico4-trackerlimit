@@ -1,50 +1,24 @@
 #!/system/bin/sh
-# v2.7 boot worker (stock only, single build)
-# 不切换算法、不挂载库、不重启追踪服务
+# v2.8 boot worker (single build, stock scheduling)
+# 兼容库通过 priv-app 私有 nativeLibraryDir 生效（模块预置，Magisk 内核层挂载
+# 早于 PMS 扫描），openxr_runtime 等其他进程不可见 —— 这是 v2.7 黑屏问题的修复。
+# 本脚本只做自检并记录日志，不做任何挂载/调优/重启。
 
-MOD=/data/adb/modules/pico4_swift_force_enable
-RUNDIR=/data/adb/pico4_tracker
-BOOT_STATUS=$RUNDIR/boot_transition.status
-BOOT_DONE=$RUNDIR/boot_transition.done
-TOGGLE=$MOD/toggle.sh
+LIB=/system/priv-app/PvrSwift/lib/arm64
+LOG=/data/local/tmp/swift205_libpreload.log
 
-umask 022
-mkdir -p "$RUNDIR"
-rm -f "$BOOT_DONE"
-: > "$BOOT_STATUS"
-chmod 644 "$BOOT_STATUS"
+{
+  echo "--- $(date '+%F %T') ---"
+  echo "PvrSwift version : $(dumpsys package com.pvr.swift 2>/dev/null | grep -m1 versionName | tr -d ' ')"
+  for f in libswift.so libtrackingclient.pxr.so libswift205shim.so; do
+    if [ -f "$LIB/$f" ]; then
+      echo "$f : $(stat -c %s "$LIB/$f") bytes"
+    else
+      echo "$f : MISSING"
+    fi
+  done
+  echo "shim in /system/lib64 : $([ -f /system/lib64/libswift205shim.so ] && echo PRESENT_BAD || echo absent_good)"
+  echo "system trackingclient  : $(stat -c %s /system/lib64/libtrackingclient.pxr.so 2>/dev/null)"
+} >> "$LOG"
 
-# v2.7 兼容层自检
-if [ -f /system/lib64/libswift205shim.so ]; then
-  echo "compat: libswift205shim present" >> "$BOOT_STATUS"
-else
-  echo "compat: libswift205shim MISSING" >> "$BOOT_STATUS"
-fi
-
-# 等待 toggle.sh 出现（如果模块目录还没就绪）
-n=0
-while [ $n -lt 30 ]; do
-  [ -f "$TOGGLE" ] && break
-  sleep 2
-  n=$((n + 1))
-done
-
-if [ ! -f "$TOGGLE" ]; then
-  # toggle.sh 不存在时直接标记完成（仅原版，无需处理）
-  echo "complete boot (no toggle script)" > "$BOOT_STATUS"
-  exit 0
-fi
-
-chmod 755 "$TOGGLE"
-"$TOGGLE" apply
-rc=$?
-
-if [ $rc -eq 0 ]; then
-  : > "$BOOT_DONE"
-  chmod 644 "$BOOT_DONE"
-  echo "complete boot" >> "$BOOT_STATUS"
-else
-  echo "error rc=$rc" >> "$BOOT_STATUS"
-fi
-
-exit $rc
+exit 0
