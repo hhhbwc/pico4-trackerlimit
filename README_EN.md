@@ -49,6 +49,11 @@ Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the u
 
 ---
 
+## 🆕 v2.8.1
+
+- 🎛️ Optional experimental add-on `pico4_algo_tuning_v0.1.1.zip`: re-encrypted .cpt runtime configs — solver threads pinned to big cores (cpu4-7), RT prio 8/5, 200Hz, n_iter 20. Controller untouched. Independent rollback.
+- 📄 [CPT_FORMAT.md](CPT_FORMAT.md): .cpt binary format spec + a real crash-loop postmortem. The service fails by **crash-looping, not degrading** — read before writing any .cpt tool.
+
 ## ✨ What gets unlocked
 
 | Capability | Stock (standard edition) | After unlock |

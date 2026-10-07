@@ -60,6 +60,15 @@
 
 ---
 
+## 🆕 v2.8.1：可选实验性调参模块 + .cpt 格式规范
+
+| 变化 | 说明 |
+|---|---|
+| 🎛️ **附加资产 `pico4_algo_tuning_v0.1.1.zip`** | 可选实验模块：把 BODYPOSE/追踪器运行时配置（.cpt）改为激进档——全身解算与追踪预测线程绑大核 cpu4-7、RT 优先级 8/5、200Hz 解算、n_iter 20。**手柄配置不动**。与主模块共存，独立回滚 |
+| 📄 **[CPT_FORMAT.md](CPT_FORMAT.md)** | .cpt 二进制格式规范（AES-128-ECB / PKCS7 / LF-only base64 / 尾部 NUL）+ 一次真实崩循环事故的完整记录与自检清单。服务失败模式是**崩循环**而非降级——写 .cpt 工具前必读 |
+
+> ⚠️ 调参模块为 EXPERIMENTAL：崩溃风险已通过安装时格式守卫拦截，但**调参收益未经系统性验证**（仅验证不崩）。回滚：`touch /data/adb/modules/pico4_algo_tuning/disable && reboot`。
+
 ## ✨ 解锁内容
 
 | 能力 | 原厂（标准版） | 解锁后 |
