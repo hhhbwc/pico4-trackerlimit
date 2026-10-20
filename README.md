@@ -89,6 +89,8 @@
 3. 重启
 4. 打开「体感追踪器」应用，正常配对/校准
 
+> **不能同时装两个 Tracker 模块。** 如果检测到旧模块 `pico4_swift205_libpreload`（v2.0.0），安装器会中止；先 `touch /data/adb/modules/pico4_swift205_libpreload/remove` 并重启，再刷本 ZIP。两个模块会同时覆盖 `PvrSwift` 的 APK/so，卸载其中一个会误删另一个的 nativeLibraryDir。
+
 ### 升级（从任意旧版，含 v2.7 / 旧性能档）
 直接安装 v2.8 ZIP 覆盖即可（**无需卸载**）；重启后生效，追踪器绑定保留，旧档调优属性自动还原。
 

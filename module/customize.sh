@@ -28,6 +28,17 @@ STATE=$RUNDIR/algo_state
 APKNAME=PvrSwift.apk
 OLD_MOD=/data/adb/modules/$MODID
 
+# v2.0.0 shipped under pico4_swift205_libpreload. Installing both leaves two
+# modules overlaying the same PvrSwift APK/libs; uninstalling either would
+# delete the other's nativeLibraryDir. Refuse instead of stacking them.
+for other in pico4_swift205_libpreload pico4_swift_force_enable; do
+  if [ "$other" != "$MODID" ] && [ -d "/data/adb/modules/$other" ] \
+     && [ ! -e "/data/adb/modules/$other/remove" ]; then
+    abort "! Another Motion Tracker module is installed: $other" \
+          "! Remove it first (touch /data/adb/modules/$other/remove, reboot), then flash this build."
+  fi
+done
+
 echo "[swift_force_enable] v2.8 install start"
 
 # ------------------------------------------------------------------

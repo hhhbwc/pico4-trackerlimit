@@ -74,8 +74,10 @@ Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the u
 3. Reboot
 4. Open the "Motion Tracker" app
 
+> **Two tracker modules cannot coexist.** If the old `pico4_swift205_libpreload` (v2.0.0) is present, the installer aborts; remove it first (`touch /data/adb/modules/pico4_swift205_libpreload/remove`, reboot), then flash this ZIP. Both modules overlay the same `PvrSwift` APK/libs, and uninstalling one deletes the other's nativeLibraryDir.
+
 ### Upgrade (from any old version, incl. old Performance/EXTREME)
-Just flash v2.7 over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept, legacy tuning properties are restored.
+Just flash v2.8 over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept, legacy tuning properties are restored.
 
 ### Uninstall
 Remove the module in Magisk → reboot. The system partition was never touched; stock 2.0.4 is restored automatically.
