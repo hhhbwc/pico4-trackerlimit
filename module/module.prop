@@ -1,6 +1,6 @@
 id=pico4_swift_force_enable
 name=PICO 4 Motion Tracker Unlock (2.0.5)
-version=v2.8
-versionCode=13
+version=v2.8.2
+versionCode=14
 author=wzy
-description=PICO 4 Motion Tracker 2.0.5 unlock for PICO 4 standard (ROM 5.13.x). v2.8 CRITICAL FIX: native compat libs moved OUT of /system/lib64 into the priv-app private nativeLibraryDir (v2.7's global mount made openxr_runtime crash-loop -> 447 tombstones -> black screen; verified fixed, 0 tombstones). Stock PICO-signed APK untouched. Single build, stock scheduling. Tracker detection works (3 devices verified). Reboot after install.
+description=PICO 4 Motion Tracker 2.0.5 unlock for PICO 4 standard (ROM 5.13.x). v2.8.2: the installer refuses to stack a second tracker module (old pico4_swift205_libpreload); v2.8 critical fix keeps native compat libs in the priv-app nativeLibraryDir so openxr_runtime never sees them. Stock PICO-signed APK untouched. Single build, stock scheduling. Tracker detection works (3 devices verified). Reboot after install.
