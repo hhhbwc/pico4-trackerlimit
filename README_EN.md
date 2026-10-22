@@ -22,7 +22,7 @@ causing an OpenXR SIGBUS crash loop → tombstones pile up (447 measured) → sy
 **v2.8 fix**: the libraries now live in `/system/priv-app/PvrSwift/lib/arm64/` (priv-app private nativeLibraryDir).
 Only the tracker app sees them; the OpenXR runtime keeps using the stock system library.
 Verified on device: **0 tombstones, 3 trackers enumerated, app opens normally**.
-Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the unmodified, PICO-signed original, and auto-unbond has been removed (manual commands in the FAQ).
+Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the unmodified, PICO-signed original, and auto-unbond has been removed (manual commands in [RELEASE_NOTES_v2.8.md](RELEASE_NOTES_v2.8.md)).
 
 ---
 

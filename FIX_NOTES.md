@@ -112,7 +112,7 @@ Magisk 用 bind mount 覆盖, 系统按 priv-app 身份加载 → privileged 分
 
 ---
 
-## 六、2.0.5 升级后的第三个障碍: getSwiftTrackerInfoVector 缺失 (已修复)
+## 九、2.0.5 升级后的第三个障碍: getSwiftTrackerInfoVector 缺失 (已修复)
 
 ### 根因 (二进制层)
 
