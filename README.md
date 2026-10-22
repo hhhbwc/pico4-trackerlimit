@@ -1,3 +1,6 @@
+> ⚠️ **维护状态**：本项目已无法继续测试与维护 —— 我把自己那套 PICO 腿环卖掉了，换成了 Rebocap。
+> 现有版本仍可照文档安装使用，但背后不再有任何真机实测，新出现的兼容问题我无法验证也就无法修。
+
 🌐 [简体中文](README.md) | [English](README_EN.md) | [Русский](README_RU.md)
 
 # PICO 4 Motion Tracker Unlock (2.0.5)

@@ -1,3 +1,6 @@
+> ⚠️ **Maintenance status**: This project can no longer be tested or maintained — I sold my PICO Motion Trackers and switched to Rebocap.
+> Existing releases still install and work as documented, but there is no on-device verification behind them any more, so I cannot validate or fix new compatibility issues.
+
 🌐 [简体中文](README.md) | English | [Русский](README_RU.md)
 
 # PICO 4 Motion Tracker Unlock (2.0.5)
