@@ -8,7 +8,7 @@
 Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, ROM 5.13.x).
 The app is enabled via a **Magisk module**: **tracker detection works, and install / upgrade / uninstall are fully reliable**. Zero system partition modifications — uninstall restores stock.
 
-> 📦 Download: [Releases](../../releases) → **v2.8** (fixed build: library isolation, 0 crashes)
+> 📦 Download: [Releases](../../releases) → **v2.8.2** (`PICO4_MotionTracker_v2.8.2.zip`: adds the duplicate-module guard; keeps the v2.8 library-isolation fix)
 > 🔧 Requirements: Magisk 27+, PICO 4 standard edition (or other 4-series devices behind the same gates)
 
 ---
@@ -77,17 +77,21 @@ Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the u
 3. Reboot
 4. Open the "Motion Tracker" app
 
-> **Two tracker modules cannot coexist.** If the old `pico4_swift205_libpreload` (v2.0.0) is present, the installer in the current source aborts (the published v2.8 ZIP has not been rebuilt yet; rebuild it to pick this up). Remove it first (`touch /data/adb/modules/pico4_swift205_libpreload/remove`, reboot), then flash this ZIP. Both modules overlay the same `PvrSwift` APK/libs, and uninstalling one deletes the other's nativeLibraryDir.
+> **Two tracker modules cannot coexist.** If the old `pico4_swift205_libpreload` (v2.0.0) is present, the installer in the current source aborts (this guard ships in the published `v2.8.2` ZIP). Remove it first (`touch /data/adb/modules/pico4_swift205_libpreload/remove`, reboot), then flash this ZIP. Both modules overlay the same `PvrSwift` APK/libs, and uninstalling one deletes the other's nativeLibraryDir.
 
 ### Upgrade (from any old version, incl. old Performance/EXTREME)
-Just flash v2.8 over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept, legacy tuning properties are restored.
+Just flash the v2.8.2 ZIP over it (**no uninstall needed**); takes effect after reboot, tracker bonds are kept, legacy tuning properties are restored.
 
 ### Uninstall
 Remove the module in Magisk → reboot. The system partition was never touched; stock 2.0.4 is restored automatically.
 
 | Build | Notes | Download |
 |---|---|---|
-| ✅ **v2.7 (only build)** | Stock scheduling; pair with pico4-power-mode for tuning | [`PICO4_MotionTracker_v2.7.zip`](../../releases/download/v2.7/PICO4_MotionTracker_v2.7.zip) |
+| ✅ **v2.8.2 (recommended)** | Library isolation + duplicate-module guard; 0-crash device verified | [`PICO4_MotionTracker_v2.8.2.zip`](../../releases/download/v2.8.2/PICO4_MotionTracker_v2.8.2.zip) |
+| v2.8 | Library isolation fix (no duplicate-module guard) | [`PICO4_MotionTracker_v2.8.zip`](../../releases/download/v2.8/PICO4_MotionTracker_v2.8.zip) |
+| ⚠️ v2.7 (legacy) | Compat libraries on the global path — **black-screen risk, do not install** | [Releases](../../releases/tag/v2.7) |
+
+The optional tuning add-on ships separately from v2.8.1 as `pico4_algo_tuning_v0.1.1.zip`.
 
 ---
 

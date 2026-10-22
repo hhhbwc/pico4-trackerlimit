@@ -64,4 +64,4 @@ No system partition changes — uninstall restores stock.
 
 ---
 
-*Module version v2.7 · versionCode 12 · Magisk required.*
+*Module version v2.8.2 · versionCode 14 · Magisk required.*

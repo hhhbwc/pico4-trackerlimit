@@ -92,17 +92,18 @@
 3. 重启
 4. 打开「体感追踪器」应用，正常配对/校准
 
-> **不能同时装两个 Tracker 模块。** 如果检测到旧模块 `pico4_swift205_libpreload`（v2.0.0），当前源码里的安装器会中止（已发布的 v2.8 ZIP 尚未重打包，重新构建后才会带上）；先 `touch /data/adb/modules/pico4_swift205_libpreload/remove` 并重启，再刷本 ZIP。两个模块会同时覆盖 `PvrSwift` 的 APK/so，卸载其中一个会误删另一个的 nativeLibraryDir。
+> **不能同时装两个 Tracker 模块。** 如果检测到旧模块 `pico4_swift205_libpreload`（v2.0.0），当前源码里的安装器会中止（这条拦截已随 **v2.8.2** ZIP 发布）；先 `touch /data/adb/modules/pico4_swift205_libpreload/remove` 并重启，再刷本 ZIP。两个模块会同时覆盖 `PvrSwift` 的 APK/so，卸载其中一个会误删另一个的 nativeLibraryDir。
 
 ### 升级（从任意旧版，含 v2.7 / 旧性能档）
-直接安装 v2.8 ZIP 覆盖即可（**无需卸载**）；重启后生效，追踪器绑定保留，旧档调优属性自动还原。
+直接安装 v2.8.2 ZIP 覆盖即可（**无需卸载**）；重启后生效，追踪器绑定保留，旧档调优属性自动还原。
 
 ### 卸载
 Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢复原厂 2.0.4。
 
 | 构建 | 说明 | 下载 |
 |---|---|---|
-| ✅ **v2.8（推荐）** | 库隔离修复版；0 崩溃真机验证 | [`PICO4_MotionTracker_v2.8.zip`](../../releases/download/v2.8/PICO4_MotionTracker_v2.8.zip) |
+| ✅ **v2.8.2（推荐）** | 库隔离修复 + 重复模块拦截；0 崩溃真机验证 | [`PICO4_MotionTracker_v2.8.2.zip`](../../releases/download/v2.8.2/PICO4_MotionTracker_v2.8.2.zip) |
+| v2.8 | 库隔离修复版（无重复模块拦截） | [`PICO4_MotionTracker_v2.8.zip`](../../releases/download/v2.8/PICO4_MotionTracker_v2.8.zip) |
 | ⚠️ v2.7（历史） | 库在全局路径，**有黑屏风险**，勿再安装 | [Releases](../../releases/tag/v2.7) |
 
 ---
