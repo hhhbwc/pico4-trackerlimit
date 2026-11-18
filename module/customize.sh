@@ -1,12 +1,20 @@
 #!/system/bin/sh
-# PICO 4 Motion Tracker Unlock - install script (v2.8)
+# PICO 4 Motion Tracker Unlock - install script (v2.9)
 # ============================================================
-# v2.8 核心修复：兼容库从 /system/lib64（全局挂载）迁到
-#   /system/priv-app/PvrSwift/lib/arm64/（priv-app 私有 nativeLibraryDir）。
-#   v2.7 的全局挂载会让 openxr_runtime 等所有加载 trackingclient 的进程
-#   拉入 shim，导致 SIGBUS 崩溃循环 -> tombstone 累积 -> 黑屏（实测 447 个）。
-#   v2.8 与 libpreload v2.0.0 方案同构，真机验证 0 崩溃、3 台追踪器正常枚举。
+# v2.9：v2.0-v2.2 改装 APK 路线的残留状态清理 + 边界/指针救援工具。
+#   背景（"边界确认按钮点不了"冲突的模块侧根因）：
+#   v2.0-v2.2 的补丁 APK 把 SwiftRepo.setSwiftDiscoverySwitch 的全部前置
+#   条件（swiftVersion/powerMode/batteryLow/size<limit/isAppVisible）nop
+#   成空操作，而后台 SwiftService（SCREEN_ON/OFF、BATTERY_LOW/OKAY 驱动）
+#   会持续调用它 → 追踪站点 discovery/配对状态长期无条件驻留。
+#   边界重确认/重标定走 VSTPanel（pvr.intent.action.swift.vst → XR 系统
+#   层），卡死的面板层拦截指针射线 → 按钮可见、悬停圆圈消失、手柄与手势
+#   均无法点击。原版 APK 守卫齐全，不存在该副作用。
+#   v2.9 做两件事：升级时清掉改装 APK 写入的 mod 状态；提供 rescue.sh
+#   （Magisk"执行"按钮 / adb 可调用）用于发作时解除卡死并采集诊断。
 #
+# v2.8 核心修复（保留）：兼容库在 /system/priv-app/PvrSwift/lib/arm64/
+#   （priv-app 私有 nativeLibraryDir），openxr_runtime 等其他进程不可见。
 # 同时保留 v2.7 成果：旧版残留清理、性能属性还原、PMS 解析缓存失效、APK 备份。
 # 变更：不再自动解绑追踪器（unbond 需 root 且有风险，改为安装日志提示手动命令）。
 # ============================================================
@@ -108,9 +116,45 @@ for f in /data/system/package_cache/*/PvrSwift-* /data/system/package_cache/*/co
 done
 
 # ------------------------------------------------------------------
+# 4b. v2.9: v2.0-v2.2 改装 APK 时代的应用内状态清理
+#     - swift_state.xml 里的 mod override 键（原版 APK 从不读，留着只会
+#       在装回改装 APK 时复活旧行为）；其余键（隐私授权/绑定数/校准计数）
+#       一律不动。
+#     - 该步骤 best-effort：文件不存在或 sed 失败都不阻塞安装。
+# ------------------------------------------------------------------
+PREFS_XML=/data/data/com.pvr.swift/shared_prefs/swift_state.xml
+if [ -f "$PREFS_XML" ]; then
+  if grep -qE "key_mod_wear_mode|key_mod_upper_limit" "$PREFS_XML" 2>/dev/null; then
+    cp "$PREFS_XML" "$PREFS_XML.bak_v29" 2>/dev/null
+    sed -i '/key_mod_wear_mode/d; /key_mod_upper_limit/d' "$PREFS_XML" 2>/dev/null \
+      && echo "[swift_force_enable] v2.0-era mod override prefs stripped (backup: swift_state.xml.bak_v29)"
+  else
+    echo "[swift_force_enable] no v2.0-era mod prefs (clean)"
+  fi
+fi
+
+# ------------------------------------------------------------------
+# 4c. v2.9: 安装边界/指针救援脚本（发作时可由 Magisk"执行"按钮或 adb 调用）
+#     v2.9.1: 同时安装 DirectTouch(KarlVis) 自动兼容监视器 —— 开机由
+#     service.sh 拉起，全自动处理"边界确认按钮点不了"，无需手动执行。
+# ------------------------------------------------------------------
+mkdir -p "$RUNDIR" 2>/dev/null
+if [ -f "$MODPATH/rescue.sh" ]; then
+  cp "$MODPATH/rescue.sh" "$RUNDIR/rescue_pointer.sh" 2>/dev/null \
+    && chmod 755 "$RUNDIR/rescue_pointer.sh" 2>/dev/null \
+    && echo "[swift_force_enable] rescue script -> $RUNDIR/rescue_pointer.sh"
+fi
+if [ -f "$MODPATH/dt_compat.sh" ]; then
+  cp "$MODPATH/dt_compat.sh" "$RUNDIR/dt_compat_watch.sh" 2>/dev/null \
+    && chmod 755 "$RUNDIR/dt_compat_watch.sh" 2>/dev/null \
+    && echo "[swift_force_enable] DirectTouch compat watcher -> $RUNDIR/dt_compat_watch.sh (auto-start via service.sh)"
+  rm -f "$RUNDIR/dt_compat_watch.pid" 2>/dev/null
+fi
+
+# ------------------------------------------------------------------
 # 5. 修复脚本可执行权限（ZIP 打包可能丢失权限）
 # ------------------------------------------------------------------
-chmod 755 "$MODPATH/service.sh" "$MODPATH/action.sh" "$MODPATH/post-fs-data.sh" "$MODPATH/uninstall.sh" 2>/dev/null || true
+chmod 755 "$MODPATH/service.sh" "$MODPATH/action.sh" "$MODPATH/rescue.sh" "$MODPATH/post-fs-data.sh" "$MODPATH/uninstall.sh" 2>/dev/null || true
 
 echo "[swift_force_enable] state=$(cat "$STATE" 2>/dev/null)"
 echo "[swift_force_enable] done, reboot to apply"

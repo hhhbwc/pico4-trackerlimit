@@ -1,29 +1,42 @@
 #!/system/bin/sh
+# PICO 4 Motion Tracker Unlock (2.0.5) v2.9.1 — Magisk "Action" button
+# Runs the boundary/pointer rescue + diagnostics from rescue.sh.
+# NOTE: 正常情况下无需手动执行 —— dt_compat.sh 监视器开机自动运行，
+# 全自动处理 KarlVis(DirectTouch) 与体感追踪边界面板的冲突。
+# 本按钮仅用于：手动立即救援 + 导出诊断包。
+
+MODDIR=$(dirname "$0")
 echo "=============================================="
-echo " PICO 4 Motion Tracker Unlock (2.0.5) v2.8"
-echo " Single build | STOCK scheduling (as-is)"
+echo " PICO 4 Motion Tracker Unlock (2.0.5) v2.9.1"
+echo " Boundary / pointer rescue + diagnostics"
 echo "=============================================="
-echo "v2.8 fix: compat libs moved out of /system/lib64"
-echo "into the priv-app private lib dir - fixes the"
-echo "openxr_runtime crash-loop / black screen of v2.7."
-LIB=/system/priv-app/PvrSwift/lib/arm64
-for f in libswift.so libtrackingclient.pxr.so libswift205shim.so; do
-  if [ -f "$LIB/$f" ]; then
-    echo "  [ok] $f ($(stat -c %s "$LIB/$f") bytes)"
-  else
-    echo "  [!!] $f MISSING"
-  fi
-done
-[ -f /system/lib64/libswift205shim.so ] && echo "  [!!] global shim still mounted (reboot needed)" || echo "  [ok] no global shim"
 echo ""
-echo "Tracker pairing kept as-is. No auto-unbond."
-echo "Perf tuning lives in pico4-power-mode."
+echo "[RU] Обычно вручную запускать НЕ нужно: с v2.9.1 совместимость"
+echo "[RU] с KarlVis/DirectTouch обеспечивается автоматически при загрузке"
+echo "[RU] (dt_compat watcher). Кнопка нужна только для немедленного"
+echo "[RU] восстановления и выгрузки диагностики."
 echo ""
-echo "[RU] v2.8: библиотеки перенесены из /system/lib64 в"
-echo "     приватный каталог приложения - исправлены"
-echo "     краши openxr_runtime и чёрный экран v2.7."
+echo "[ZH] 正常情况下无需手动执行：v2.9.1 起兼容监视器开机自动运行。"
+echo "[ZH] 本按钮只用于立即救援 + 导出诊断包。"
 echo ""
-echo "[ZH] v2.8：兼容库迁出 /system/lib64，修复 v2.7 的"
-echo "     openxr 崩溃循环与黑屏问题。保留绑定，不自动解绑。"
+
+sh "$MODDIR/rescue.sh"
+RC=$?
+
+echo ""
+echo "=============================================="
+if [ "$RC" = 0 ]; then
+  echo " Rescue finished. Game tracking data is unaffected"
+  echo " (openxr_runtime -> pvrtrackingservice is a system"
+  echo "  service, not part of this app)."
+  echo ""
+  echo " [RU] Готово. Трекинг в играх не прерывается."
+  echo " [RU] Диагностика сохранена в /sdcard/pico4_diag_*.log"
+  echo ""
+  echo " [ZH] 完成。游戏内追踪不受影响。诊断日志在"
+  echo " [ZH] /sdcard/pico4_diag_*.log。"
+else
+  echo " Rescue script failed (rc=$RC). Report /sdcard logs."
+fi
 echo "=============================================="
 exit 0

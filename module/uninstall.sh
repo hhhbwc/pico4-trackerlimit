@@ -1,13 +1,32 @@
 #!/system/bin/sh
-# PICO 4 Motion Tracker Unlock - uninstall cleanup (v2.7)
+# PICO 4 Motion Tracker Unlock - uninstall cleanup (v2.9)
 # 1) 使 PMS 解析缓存失效 -> 下次启动重新解析并恢复系统原版应用 (2.0.4)
 # 2) 恢复被旧版性能包持久化写入的系统属性（best-effort，仅在值确实被改过时写回）
 # 3) 保留 /data/adb/pico4_tracker（记忆此前安装，避免重装时重复解绑）
 #    保留 /data/adb/modules_backup 中的原版 APK 备份（应急恢复用）
+# 4) v2.9: 清掉改装 APK 时代写入 swift_state.xml 的 mod override 键
 
 for f in /data/system/package_cache/*/PvrSwift-* /data/system/package_cache/*/com.pvr.swift-*; do
   [ -e "$f" ] && rm -f "$f"
 done
+
+# v2.9.1: 停掉 DirectTouch 兼容监视器并还原其临时属性
+if [ -f /data/adb/pico4_tracker/dt_compat_watch.pid ]; then
+  kill "$(cat /data/adb/pico4_tracker/dt_compat_watch.pid 2>/dev/null)" 2>/dev/null
+  rm -f /data/adb/pico4_tracker/dt_compat_watch.pid
+fi
+if [ "$(getprop persist.dt.enable)" = "0" ]; then
+  if pm path com.picodirecttouch.lsposed >/dev/null 2>&1; then
+    setprop persist.dt.enable 1   # KarlVis 仍需要直触功能
+  else
+    resetprop -d persist.dt.enable 2>/dev/null
+  fi
+fi
+
+PREFS_XML=/data/data/com.pvr.swift/shared_prefs/swift_state.xml
+if [ -f "$PREFS_XML" ]; then
+  sed -i '/key_mod_wear_mode/d; /key_mod_upper_limit/d' "$PREFS_XML" 2>/dev/null
+fi
 
 # 立即清掉内存中的性能模式值（旧版 setprop 曾写入）
 resetprop -d persist.pvr.performance_mode 2>/dev/null

@@ -1,6 +1,6 @@
 id=pico4_swift_force_enable
 name=PICO 4 Motion Tracker Unlock (2.0.5)
-version=v2.8.2
-versionCode=14
+version=v2.9.1
+versionCode=16
 author=wzy
-description=PICO 4 Motion Tracker 2.0.5 unlock for PICO 4 standard (ROM 5.13.x). v2.8.2: the installer refuses to stack a second tracker module (old pico4_swift205_libpreload); v2.8 critical fix keeps native compat libs in the priv-app nativeLibraryDir so openxr_runtime never sees them. Stock PICO-signed APK untouched. Single build, stock scheduling. Tracker detection works (3 devices verified). Reboot after install.
+description=PICO 4 Motion Tracker 2.0.5 unlock for PICO 4 standard (ROM 5.13.x). v2.9.1: fully automatic DirectTouch/KarlVis compatibility — a background watcher (started at boot, zero user interaction) detects the tracker boundary/recalibration panel and temporarily stands down KarlVis's DirectTouch (persist.dt.enable), auto-restoring afterwards; in stuck cases it auto-dismisses the panel without touching in-game tracking. Conflict root cause (verified by reverse-engineering KarlVis O1.13.7S): its LSPosed module injects libdirecttouch.so into com.picoxr.xrshell and proxies ray/cursor updates (rayProxy/cursorProxy), so panels outside its registry — like the PvrSwift VST boundary panel — lose the hover circle and cannot be clicked. Stock PICO-signed APK, libs isolated in priv-app nativeLibraryDir. Reboot after install.

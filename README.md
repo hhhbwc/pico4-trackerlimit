@@ -9,8 +9,56 @@
 通过 **Magisk 模块** 在标准版上完整启用「体感追踪器 2.0.5」应用：
 **追踪器检测正常、版本切换/升级/卸载全链路可靠**。系统分区零修改，卸载即恢复原版。
 
-> 📦 下载：[Releases](../../releases) → **v2.8.2**（含重复模块拦截；v2.8 的库隔离修复不变）
+> 📦 下载：[Releases](../../releases) → **v2.9.1**（与 KarlVis/DirectTouch 全自动兼容 + v2.0–v2.2 残留清理；v2.8 库隔离修复不变）
 > 🔧 要求：Magisk 27+，PICO 4 标准版（或受相同门禁限制的 4 系列设备）
+
+---
+
+## ❌ 关于 5 点全身追踪（实测结论，先说清楚）
+
+**实测不支持，让等它的各位失望了，抱歉。**
+
+连接层确实是放开的：5 台追踪器可以配对、应用里也能切到 5 点档位。
+但**全身解算不工作**——标准版原厂 BODYPOSE 算法缺少 5 点专属的
+forearm / knee 神经网络模型（`e2e_*_8_*`），Ultra 的 1.0.0.54 算法
+作为替代未经证实。5 点全身动捕在标准版上目前无解，**请按 2 点 / 3 点使用**。
+
+尽管如此，这个模块仍然有实际价值：
+
+- 标准版完整解锁「体感追踪器 2.0.5」（原版 APK、原签名、门禁绕过）
+- 2 / 3 点模式正常切换，追踪器正常配对 / 校准 / 枚举
+- 实测解决追踪器在游戏（如 VRChat）中**掉线**、校准/重标定弹窗**中断使用**等问题
+- 与 KarlVis/DirectTouch 自动兼容，边界确认按钮不再失灵
+
+---
+
+## 🆕 v2.9.1：修复"边界确认按钮点不了"（与 KarlVis/DirectTouch 的冲突，全自动）
+
+**用户报告**：装 v2.0 后，游戏内弹出的边界确认/重标定窗口无法点击确认——指针
+悬停时确认圆圈不出现，手柄与手势均失效；首装首次开机正常，重启后复现。
+
+**真实冲突点（逆向 KarlVis O1.13.7S 确认）**：KarlVis 的 DirectTouch（LSPosed
+模块 `com.picodirecttouch.lsposed`）向 `com.picoxr.xrshell` 注入 native 库，
+以 proxy/orig 代理接管了引擎的**射线更新（rayProxy）与光标/悬停圆圈更新
+（cursorProxy）**——只有它注册表里的面板才有正常指针交互；体感追踪器的边界
+面板（PvrSwift VSTPanel 的应用层）不在其中 → 圆圈消失、手柄手势都点不了。
+没有追踪器模块时该面板根本不会出现、没有 KarlVis 时引擎原版命中逻辑覆盖所有
+层——两者叠加才触发；"首次开机正常、重启后坏"= LSPosed 钩子重启后生效。
+完整分析见 [RELEASE_NOTES_v2.9.md](RELEASE_NOTES_v2.9.md)。
+
+| 变化 | 说明 |
+|---|---|
+| 🤖 **全自动 DirectTouch 兼容监视器（v2.9.1）** | `dt_compat.sh` 开机自启（未装 KarlVis 自动退出、零开销）：边界面板弹出时临时 `persist.dt.enable 0` 让 DirectTouch 让位，面板消失自动还原；面板卡死 120s 且前台是游戏时自动解除（不影响游戏内追踪数据流）。**无需任何手动点击** |
+| 🧹 **升级清理** | 覆盖安装自动移除改装 APK 时代写入的 `key_mod_wear_mode` / `key_mod_upper_limit` 偏好键；同时消除 v2.0 补丁 APK 的 discovery 后台强驻留副作用（原版 APK 守卫齐全） |
+| 🛟 **救援 + 诊断（备用）** | Magisk"执行"按钮 = 立即救援 + 导出 `/sdcard/pico4_diag_*.log`（含 DirectTouch/lspd 诊断段） |
+| 🔒 架构不变 | 原版 PICO 签名 APK + priv-app 私有库目录（v2.8 路线） |
+
+> **v2.0/v2.1/v2.2 用户**：直接覆盖安装 v2.9.1（同模块 id，无需卸载，绑定保留）。
+> ✅ watcher 状态机已在作者真机（A8110 / 5.13.7）端到端验证；`persist.dt.enable`
+> 的实时语义待 KarlVis 真机确认，若热切换不生效由卡死自动解锁兜底——两条路都
+> 无需手动干预。
+> "dock 窗口跟随头部旋转" = Pico2Dock（替换系统底座 `com.pvr.shortcut`）×
+> KarlVis(DockHook) 的冲突，与本模块无关。
 
 ---
 
@@ -79,8 +127,8 @@
 | 体感追踪器 2.0.5 应用 | 提示"设备不支持，请升级系统" | 完整可用（**原版 APK、原签名、零修改**） |
 | 追踪器设备检测 | — | ✅ 正常列出 / 连接 / 校准 |
 | 特权权限 | 拿不到（签名不符） | priv-app 身份完整授予 |
-| 追踪器数量 | 2 或 3（随穿戴模式固定） | 2 / 3 / 5，跟随官方应用流程切换 |
-| 5 点（forearm / knee） | Ultra 专属档位 | ⚠️ 见下方"5 点模式"说明（连接层放开，解算层受限于原厂算法模型） |
+| 追踪器数量 | 2 或 3（随穿戴模式固定） | 2 / 3 正常可用；❌ 5 点实测不支持（见上方说明） |
+| 5 点（forearm / knee） | Ultra 专属档位 | ❌ **实测不支持**：连接层可配对，全身解算不工作（见上方"关于 5 点"） |
 
 ---
 
@@ -102,9 +150,11 @@ Magisk 中删除本模块 → 重启。系统分区从未被修改，自动恢�
 
 | 构建 | 说明 | 下载 |
 |---|---|---|
-| ✅ **v2.8.2（推荐）** | 库隔离修复 + 重复模块拦截；0 崩溃真机验证 | [`PICO4_MotionTracker_v2.8.2.zip`](../../releases/download/v2.8.2/PICO4_MotionTracker_v2.8.2.zip) |
+| ✅ **v2.9.1（推荐）** | KarlVis/DirectTouch 全自动兼容（watcher 已实机验证）+ v2.0–v2.2 残留清理 | [`PICO4_MotionTracker_v2.9.1.zip`](../../releases/download/v2.9.1/PICO4_MotionTracker_v2.9.1.zip) |
+| v2.8.2 | 库隔离修复 + 重复模块拦截；0 崩溃真机验证 | [`PICO4_MotionTracker_v2.8.2.zip`](../../releases/download/v2.8.2/PICO4_MotionTracker_v2.8.2.zip) |
 | v2.8 | 库隔离修复版（无重复模块拦截） | [`PICO4_MotionTracker_v2.8.zip`](../../releases/download/v2.8/PICO4_MotionTracker_v2.8.zip) |
 | ⚠️ v2.7（历史） | 库在全局路径，**有黑屏风险**，勿再安装 | [Releases](../../releases/tag/v2.7) |
+| ⚠️ v2.0–v2.2（历史） | **改装 APK 路线**，存在 discovery 后台强制驻留等系统级副作用，请升级 v2.9 | [Releases](../../releases/tag/v2.0) |
 
 ---
 
@@ -153,18 +203,24 @@ v2.6 起自动处理（每次开机自愈）。
 **Q：系统 OTA 后失效？**
 正常现象，重刷本模块 zip 并重启即可。
 
+**Q：游戏里弹出的边界确认/重标定窗口，确认按钮点不了（指针上没有确认圆圈，手柄和手势都不行）？**
+这是 **KarlVis/DirectTouch 与本模块的叠加冲突**：DirectTouch 接管了 xrshell 的射线/光标
+（悬停圆圈）更新，只认它注册表里的面板，追踪器的边界面板不在其中。**升级 v2.9.1**（覆盖安装
+即可）——兼容监视器开机自动运行，DirectTouch 在面板存续期间自动让位、卡死自动解除，
+全程无需手动操作。想帮忙定位可附 `/sdcard/pico4_diag_*.log` 提 issue。"dock 窗口跟随头部
+旋转"是 Pico2Dock（替换系统底座 com.pvr.shortcut）× KarlVis(DockHook) 的冲突，与本模块无关。
+
 **Q：v2.7 为什么会黑屏？**
 兼容库当时挂在全局路径 `/system/lib64/`，`openxr_runtime` 等进程加载 trackingclient 时被连带拉入 shim，触发 SIGBUS 崩溃循环（实测 447 个 tombstone）。v2.8 已把库迁到 priv-app 私有目录，彻底修复。
 
-**Q：5 点模式？**
-**连接层**：系统支持（MCU `tracker_num=5`、应用 `upper.limit=5`、`ro.pxr.support.swiftversion=3`），5 台追踪器理论上可以配对连接。
-**解算层**：⚠️ 当前模块使用原厂 BODYPOSE 1.0.0.47 算法，其模型目录**缺少 5 点专属的 forearm / knee 神经网络模型**（`e2e_*_8_*`），5 点全身解算大概率不可用；Ultra 1.0.0.54 算法才带完整 5 点模型（不随本模块分发）。
-**实测**：作者手上只有 3 台，未做满配真机验证。有 5 台设备的朋友欢迎提 issue 附 logcat。
+**Q：5 点全身动捕到底能不能用？**
+**不能。实测结论（2026-11，多位用户实测）：不支持。** 连接层是通的（5 台可配对、应用里能切 5 点档），但全身解算不工作——标准版原厂 BODYPOSE 算法缺 5 点专属的 forearm / knee 模型（`e2e_*_8_*`），Ultra 1.0.0.54 算法替代未经证实。请按 **2 点 / 3 点**使用。给期待 5 点的朋友道个歉——但模块在标准版上解锁 2.0.5、稳定追踪不掉线这些价值是真实的。
 
 ---
 
 ## 📄 文档与版本历史
 
+- [RELEASE_NOTES_v2.9.md](RELEASE_NOTES_v2.9.md) — v2.9/v2.9.1 版本说明（边界确认指针冲突的完整根因分析：KarlVis DirectTouch + 实机验证记录）
 - [RELEASE_NOTES_v2.7.md](RELEASE_NOTES_v2.7.md) — v2.7 版本说明
 - [RELEASE_NOTES_v2.6.md](RELEASE_NOTES_v2.6.md) — v2.6 版本说明（历史）
 - [FIX_NOTES_v2.6.md](FIX_NOTES_v2.6.md) — v2.4–v2.6 完整技术记录

@@ -8,8 +8,62 @@
 Full unlock of the PICO Motion Tracker app **2.0.5** for the **PICO 4 standard edition** (A8110 / Phoenix, ROM 5.13.x).
 The app is enabled via a **Magisk module**: **tracker detection works, and install / upgrade / uninstall are fully reliable**. Zero system partition modifications — uninstall restores stock.
 
-> 📦 Download: [Releases](../../releases) → **v2.8.2** (`PICO4_MotionTracker_v2.8.2.zip`: adds the duplicate-module guard; keeps the v2.8 library-isolation fix)
+> 📦 Download: [Releases](../../releases) → **v2.9.1** (`PICO4_MotionTracker_v2.9.1.zip`: fully automatic KarlVis/DirectTouch compatibility + cleanup of v2.0–v2.2 leftovers; keeps the v2.8 library-isolation fix)
 > 🔧 Requirements: Magisk 27+, PICO 4 standard edition (or other 4-series devices behind the same gates)
+
+---
+
+## ❌ About 5-point full-body tracking (real-world test verdict, stated up front)
+
+**Not supported in practice — sorry to everyone who was waiting for it.**
+
+The connection layer is indeed open: 5 trackers pair, and the app lets you pick the 5-point tier.
+But **full-body solving does not work** — the stock BODYPOSE algorithm of the standard edition lacks
+the 5-point forearm / knee neural network models (`e2e_*_8_*`), and the Ultra 1.0.0.54 algorithm as
+a replacement is unverified. Full 5-point capture on the standard edition is currently a dead end —
+**use 2 / 3 points**.
+
+The module is still genuinely useful:
+
+- full unlock of Motion Tracker 2.0.5 on the standard edition (stock APK, stock signature, gates bypassed)
+- 2 / 3-point mode switching, pairing / calibration / device listing all work
+- per user feedback it solves real problems: trackers dropping in games (e.g. VRChat),
+  recalibration pop-ups interrupting use
+- automatically compatible with KarlVis/DirectTouch — the boundary confirm button stops going dead
+
+---
+
+## 🆕 v2.9.1: fix for "boundary confirm button not clickable" (conflict with KarlVis/DirectTouch, fully automatic)
+
+**User report**: on v2.0, the in-game boundary-confirmation / recalibration window cannot be
+confirmed — the pointer hover circle never appears; both controller and hand tracking fail;
+first boot after install is fine, then it reproduces after any reboot.
+
+**Real conflict point (confirmed by reverse-engineering KarlVis O1.13.7S)**: KarlVis's DirectTouch
+is an LSPosed module (`com.picodirecttouch.lsposed`) that injects a native library into
+`com.picoxr.xrshell` and interposes (proxy/orig) the engine's **ray update (rayProxy)** and
+**cursor / hover-circle update (cursorProxy)** plus the panel-manager sync. Only panels in its
+registry get normal pointer interaction; the tracker boundary/recalibration panel (PvrSwift's
+VSTPanel app layer) is not in it → no hover circle, button unclickable. Without the tracker
+module the panel never appears; without KarlVis the engine's original hit-testing covers all
+layers — the conflict needs both. "First boot fine, broken after reboot" = LSPosed hooks activate
+after reboot. Full analysis: [RELEASE_NOTES_v2.9.md](RELEASE_NOTES_v2.9.md).
+
+| Change | Details |
+|---|---|
+| 🤖 **Automatic DirectTouch compatibility (v2.9.1)** | a boot-started watcher (`dt_compat.sh`; exits immediately if KarlVis is absent, zero overhead): when the boundary panel appears it temporarily sets `persist.dt.enable 0` (DirectTouch stands down), auto-restoring afterwards; if the panel hangs 120s with a game in the foreground it auto-dismisses the panel (**in-game tracking is not interrupted**). **No manual clicks needed** |
+| 🧹 **Upgrade cleanup** | removes the `key_mod_wear_mode` / `key_mod_upper_limit` prefs from the patched-APK era; also eliminates the v2.0 patched-APK side effect (background discovery held ON — the stock APK keeps all guards) |
+| 🛟 **Rescue + diagnostics (fallback)** | Magisk "Action" button = immediate rescue + `/sdcard/pico4_diag_*.log` dump (incl. a DirectTouch/lspd section) |
+| 🔒 Architecture unchanged | stock PICO-signed APK + priv-app private lib dir (v2.8 route) |
+
+> **v2.0 / v2.1 / v2.2 users**: flash v2.9.1 over the existing module (same module id, no
+> uninstall needed, bonds kept).
+> ✅ The watcher state machine was verified end-to-end on the author's device (A8110 / 5.13.7);
+> whether DirectTouch reads `persist.dt.enable` live still needs confirmation on a KarlVis device
+> (the author's device runs a different XRShell build — installing KarlVis there risks a crash),
+> but there is a fallback path (auto-dismiss of the hung panel). Neither path needs manual action.
+> The "dock window follows head rotation" issue = Pico2Dock (it replaces the system dock
+> `com.pvr.shortcut`) × KarlVis (DockHook) — unrelated to this module.
 
 ---
 
@@ -64,8 +118,8 @@ Overlay-install v2.8 over v2.7 — no uninstall needed. The APK is back to the u
 | Motion Tracker 2.0.5 app | "Device not supported, please upgrade" | Fully working (**stock APK, original signature, zero modifications**) |
 | Tracker detection | — | ✅ List / connect / calibrate |
 | Privileged permissions | Unobtainable (signature mismatch) | Full priv-app grant |
-| Tracker count | 2 or 3 (fixed by wear mode) | 2 / 3 / 5, following official app flows |
-| 5-point (forearm / knee) | Ultra-only tier | Unlocked at system level (5 trackers required) |
+| Tracker count | 2 or 3 (fixed by wear mode) | 2 / 3 work; ❌ 5-point is NOT supported in practice (see above) |
+| 5-point (forearm / knee) | Ultra-only tier | ❌ **Not supported in practice**: pairing works, full-body solve does not (see section above) |
 
 ---
 
@@ -136,8 +190,12 @@ Handled automatically since v2.6 (self-healing on every boot).
 **Q: Breaks after system OTA?**
 Expected — re-flash the module ZIP and reboot.
 
-**Q: 5-point mode?**
-Needs 5 trackers; not fully tested with 5 units (system-level evidence shows 5 slots supported).
+**Q: Does 5-point full-body capture work?**
+**No. Real-world verdict (2026-11, multiple users): not supported.** Pairing and the 5-point tier in
+the app work, but the body solve does not — the stock algorithm lacks forearm / knee models, and the
+Ultra algorithm swap is unverified. Use **2 / 3 points**. Apologies again to everyone who wanted
+5-point specifically — but unlocking 2.0.5 and stable, non-dropping trackers on the standard edition
+are real, working value of this module.
 
 ---
 
